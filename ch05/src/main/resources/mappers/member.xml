@@ -19,6 +19,24 @@
     <select id="selectMembersForSearch" resultType="kr.co.ch05.DTO.MemberDTO">
         SELECT * FROM `member`
         <where>
+            <if test="value != ''">
+                REPLACE(${type}, '-', '') LIKE CONCAT('%', #{value}, '%')
+            </if>
+            <if test="type != null and pos !=null">
+                and
+            </if>
+            <if test="pos != null">
+                `pos` IN
+                <foreach item="item" collection="pos" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <!--
+    <select id="selectMembersForSearch" resultType="kr.co.ch05.DTO.MemberDTO">
+        SELECT * FROM `member`
+        <where>
             <if test="type == 'uid' and value != ''">
                 `uid` LIKE CONCAT('%', #{value}, '%')
             </if>
@@ -39,6 +57,7 @@
             </if>
         </where>
     </select>
+    -->
 
     <!--
         resultMap
