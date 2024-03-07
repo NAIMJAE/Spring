@@ -20,6 +20,8 @@ public class MyBatisConfig {
     public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
         SqlSessionFactoryBean sessionFactory = new SqlSessionFactoryBean();
         sessionFactory.setDataSource(dataSource);
+        // 클래스 패스, 파일시스템에서 리소르 찾기 (XML, 프로퍼티 파일, 이미지 등)
+        // mappers 디렉토리 내의 모든 XML 파일을 찾아 Mapper로 등록
         sessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:/mappers/*.xml"));
         return sessionFactory.getObject();
     }

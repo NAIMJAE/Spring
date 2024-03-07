@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.ch05.Mapper.MemberMapper">
+    <insert id="insertMember">
+        INSERT INTO `member` (`uid`, `name`, `hp`, `pos`, `dep`, `rdate`) VALUES (#{uid}, #{name}, #{hp}, #{pos}, #{dep}, NOW());
+    </insert>
+
+    <select id="selectMember" resultType="kr.co.ch05.DTO.MemberDTO">
+        SELECT * FROM `member` WHERE `uid`=#{uid};
+    </select>
+
+    <select id="selectMembers" resultType="kr.co.ch05.DTO.MemberDTO">
+        SELECT * FROM `member`
+    </select>
+
+    <select id="selectMembersForSearch" resultType="kr.co.ch05.DTO.MemberDTO">
+        SELECT * FROM `member`
+        <where>
+            <if test="type == 'uid' and value != ''">
+                `uid` LIKE CONCAT('%', #{value}, '%')
+            </if>
+            <if test="type == 'name' and value != ''">
+                `name` LIKE CONCAT('%', #{value}, '%')
+            </if>
+            <if test="type == 'hp' and value != ''">
+                REPLACE(hp, '-', '') LIKE CONCAT('%', #{value}, '%')
+            </if>
+            <if test="type != null and pos !=null">
+                and
+            </if>
+            <if test="pos != null">
+                `pos` IN
+                <foreach item="item" collection="pos" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <!--
+        resultMap
+        - 데이터베이스 결과 집합을 사용자 정의 자바 객체로 매핑하는 태그
+        - 테이블간의 1:1, 1:N 관계를 고려한 사용자 정의 데이터 구조
+    -->
+
+    <resultMap id="parentMap" type="kr.co.ch05.DTO.ParentDTO">
+        <result property="pid" column="pid"/>
+        <result property="name" column="name"/>
+        <result property="birth" column="birth"/>
+        <result property="addr" column="addr"/>
+        <!--list타입에 맞게 collection-->
+        <collection property="childs" ofType="kr.co.ch05.DTO.ChildDTO">
+            <result property="cid" column="cid"/>
+            <result property="name" column="name"/>
+            <result property="hp" column="hp"/>
+            <result property="parent" column="parent"/>
+        </collection>
+    </resultMap>
+    <!--두개 이상의 테이블을 JOIN할 때 resultMap -->
+    <select id="selectParentWithChild" resultMap="parentMap">
+        SELECT * from `parent` AS p JOIN `child` AS c ON p.pid = c.parent;
+    </select>
+
+    <update id="updateMember">
+        UPDATE `member` SET `name`=#{name}, `hp`=#{hp}, `pos`=#{pos}, `dep`=#{dep}, WHERE `uid`=#{uid};
+    </update>
+
+    <delete id="deleteMember">
+        DELETE FROM `member` WHERE `uid`=#{uid};
+    </delete>
+</mapper>

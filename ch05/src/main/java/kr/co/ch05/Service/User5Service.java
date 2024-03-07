@@ -5,7 +5,6 @@ import kr.co.ch05.Mapper.User5Mapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-
 @Service
 public class User5Service {
 
