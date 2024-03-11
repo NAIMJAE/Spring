@@ -1,0 +1,31 @@
+<html>
+<head>
+    <title>User2::list</title>
+</head>
+<body>
+    <h3>User2 목록</h3>
+
+    <a th:href="@{/index}">메인</a>
+    <a th:href="@{/user2/register}">등록</a>
+
+    <table border="1">
+        <tr>
+            <td>아이디</td>
+            <td>이름</td>
+            <td>생년월일</td>
+            <td>주소</td>
+            <td>관리</td>
+        </tr>
+        <tr th:each="user:${users}">
+            <td th:text="${user.uid}"></td>
+            <td th:text="${user.name}"></td>
+            <td th:text="${user.birth}"></td>
+            <td th:text="${user.addr}"></td>
+            <td>
+                <a th:href="@{/user2/modify(uid=${user.uid})}">수정</a>
+                <a th:href="@{/user2/delete(uid=${user.uid})}">삭제</a>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
