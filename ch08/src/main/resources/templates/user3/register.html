@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>user3::register</title>
+</head>
+<body>
+    <h3>user3::register</h3>
+    <form th:action="@{/templates/user3/register}" method="post">
+        <table border="1">
+            <tr>
+                <th>아이디</th>
+                <th><input type="text" name="uid"></th>
+            </tr>
+            <tr>
+                <th>비밀번호</th>
+                <th><input type="password" name="pass"></th>
+            </tr>
+            <tr>
+                <th>이름</th>
+                <th><input type="text" name="name"></th>
+            </tr>
+            <tr>
+                <th>나이</th>
+                <th><input type="number" name="age"></th>
+            </tr>
+            <tr>
+                <th>휴대폰</th>
+                <th><input type="text" name="hp"></th>
+            </tr>
+            <tr>
+                <th>권한</th>
+                <th>
+                    <select name="role">
+                        <option value="ADMIN">최고관리자</option>
+                        <option value="MANAGER">운영자</option>
+                        <option value="USER">일반사용자</option>
+                    </select>
+                </th>
+            </tr>
+            <tr>
+                <th colspan="2" align="right">
+                    <input type="submit" value="가입">
+                </th>
+            </tr>
+        </table>
+    </form>
+</body>
+</html>
