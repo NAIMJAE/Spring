@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>user3::login</title>
+</head>
+<body>
+    <h3>user3::login</h3>
+
+    <!-- session 어노테이션 방식 인증 처리 -->
+    <form th:action="@{/user3/login}" method="post">
+        <input type="text" name="uid"><br>
+        <input type="password" name="pass"><br>
+        <input type="submit" value="로그인">
+    </form>
+</body>
+</html>

@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>user2::result</title>
+</head>
+<body>
+<h3>User2 쿠키</h3>
+<a th:href="@{/}">메인</a>
+
+<p>
+    jsessionid : <span>[[${jsessionid}]]</span><br>
+    username : <span>[[${username}]]</span><br>
+</p>
+</body>
+</html>
