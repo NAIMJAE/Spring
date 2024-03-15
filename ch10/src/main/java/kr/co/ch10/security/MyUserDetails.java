@@ -1,6 +1,6 @@
-package kr.co.ch08.security;
+package kr.co.ch10.security;
 
-import kr.co.ch08.entity.User;
+import kr.co.ch10.entity.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -25,10 +25,12 @@ public class MyUserDetails implements UserDetails {
     // getAuthorities -> 권한 목록
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        log.info("getAuthorities");
+        log.info("getAuthorities 시작");
         // 계정이 갖는 권한 목록
         List<GrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority(user.getRole()));
+
+        log.info("getAuthorities authorities : " + authorities);
         return authorities;
     }
 
