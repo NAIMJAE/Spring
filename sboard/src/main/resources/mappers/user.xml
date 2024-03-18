@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="kr.co.sboard.mapper.UserMapper">
+
+    <select id="selectTerms" resultType="kr.co.sboard.dto.TermsDTO">
+        select * from terms;
+    </select>
+
+    <insert id="insertUser">
+        insert into user set uid=#{uid}, pass=#{pass}, name=#{name}, nick=#{nick}, email=#{email},
+                            hp=#{hp}, zip=#{zip}, addr1=#{addr1}, addr2=#{addr2}, regip=#{regip}, rdate=NOW();
+    </insert>
+    
+    <select id="selectCheckUid" resultType="int">
+        select count(*) from user where uid = #{uid};
+    </select>
+
+    <select id="checkUser" resultType="int">
+        select count(*) from user where ${type} = #{value};
+    </select>
+</mapper>
