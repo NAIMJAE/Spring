@@ -28,14 +28,20 @@
                 const btnCheckUid = document.getElementsByClassName('btnCheckUid')[0];
                 const btnCheckNick = document.getElementsByClassName('btnCheckNick')[0];
                 const btnCheckHp = document.getElementsByClassName('btnCheckHp')[0];
+                const btnCheckEmail = document.getElementsByClassName('btnCheckEmail')[0];
+
                 const inputPass1 = document.getElementById('inputPass1');
                 const inputPass2 = document.getElementById('inputPass2');
+                const inputName = document.getElementById('inputName');
+                const inputEmail = document.getElementById('inputEmail');
 
                 const resultUid = document.getElementsByClassName('resultUid')[0];
                 const resultNick = document.getElementsByClassName('resultNick')[0];
                 const resultHp = document.getElementsByClassName('resultHp')[0];
                 const resultPass1 = document.getElementsByClassName('resultPass1')[0];
                 const resultPass2 = document.getElementsByClassName('resultPass2')[0];
+                const resultName = document.getElementsByClassName('resultName')[0];
+                const resultEmail = document.getElementsByClassName('resultEmail')[0];
 
                 // 아이디 유효성 & 중복 검사
                 btnCheckUid.onclick = function (){
@@ -83,46 +89,80 @@
                 }
 
                 // 비밀번호 유효성 검사
-                inputPass1.addEventListener('focusout', function (){
-                    const pass   = form.pass;
-                    // 유효성 검사
-                    if (!pass.value.match(rePass)) {
-                        input.classList.remove('is-valid');
-                        resultUid.classList.remove('valid-feedback');
-
-                        spinner.classList.add('d-none');
-                        input.classList.add('is-invalid');
-                        resultUid.classList.add('invalid-feedback');
-                        resultUid.innerText = '비밀번호 형식이 알맞지 않습니다.';
-                        isUidOk = false;
-                        return;
-                    }else {
-
-                    }
-                })
-
                 inputPass2.addEventListener('focusout', function (){
                     const pass   = form.pass;
                     const pass2   = form.pass2;
+
                     // 유효성 검사
-                    if (!pass2.value.match(rePass)) {
-                        input.classList.remove('is-valid');
-                        resultUid.classList.remove('valid-feedback');
+                    if (pass.value === pass2.value){
+                        if (!pass.value.match(rePass)) {
+                            pass.classList.remove('is-valid');
+                            pass2.classList.remove('is-valid');
+                            resultPass1.classList.remove('valid-feedback');
+                            resultPass2.classList.remove('valid-feedback');
+                            resultPass2.innerText = "";
 
-                        spinner.classList.add('d-none');
-                        input.classList.add('is-invalid');
-                        resultUid.classList.add('invalid-feedback');
-                        resultUid.innerText = '비밀번호 형식이 알맞지 않습니다.';
-                        isUidOk = false;
-                        return;
-                    }else {
-                        if (pass != pass2) {
+                            pass.classList.add('is-invalid');
+                            pass2.classList.add('is-invalid');
+                            resultPass1.classList.add('invalid-feedback');
+                            resultPass1.innerText = '비밀번호 형식이 알맞지 않습니다.';
+                            isPassOk = false;
+                            return;
+                        }else {
+                            pass.classList.remove('is-invalid');
+                            pass2.classList.remove('is-invalid');
+                            resultPass1.classList.remove('invalid-feedback');
+                            resultPass2.classList.remove('invalid-feedback');
+                            resultPass1.innerText = "";
 
+                            pass.classList.add('is-valid');
+                            pass2.classList.add('is-valid');
+                            resultPass2.classList.add('valid-feedback');
+                            resultPass2.innerText = '사용 가능한 비밀번호 입니다.';
+                            isPassOk = true;
                         }
+                    }else {
+                        pass.classList.remove('is-valid');
+                        pass2.classList.remove('is-valid');
+                        resultPass1.classList.remove('valid-feedback');
+                        resultPass2.classList.remove('valid-feedback');
+                        resultPass1.innerText = "";
+
+                        pass.classList.add('is-invalid');
+                        pass2.classList.add('is-invalid');
+                        resultPass2.classList.add('invalid-feedback');
+                        resultPass2.innerText = '비밀번호가 일치하지 않습니다.';
+                        isPassOk = false;
+                        return;
                     }
                 })
 
                 // 이름 유효성 검사
+                inputName.addEventListener('focusout', function (){
+                    const input = form.name;
+
+                    setTimeout(async () => {
+                        // 유효성 검사
+                        if (!input.value.match(reName)) {
+                            input.classList.remove('is-valid');
+                            resultName.classList.remove('valid-feedback');
+
+                            input.classList.add('is-invalid');
+                            resultName.classList.add('invalid-feedback');
+                            resultName.innerText = '이름 형식이 알맞지 않습니다.';
+                            isNameOk = false;
+                            return;
+                        }else {
+                            input.classList.remove('is-invalid');
+                            resultName.classList.remove('invalid-feedback');
+                            resultName.innerText = "";
+
+                            input.classList.add('is-valid');
+                            resultName.classList.add('valid-feedback');
+                            isNameOk = true;
+                        }
+                    })
+                })
 
                 // 별명 유효성 & 중복 검사
                 btnCheckNick.onclick = function (){
@@ -215,8 +255,82 @@
                 }
 
                 // 이메일 유효성 검사
+                btnCheckEmail.onclick = function (){
+                    const input   = form.email;
+                    const type    = 'email';
+                    const spinner = this.getElementsByClassName('spinner')[0];
+                    spinner.classList.remove('d-none');
+
+                    setTimeout(async () => {
+                        // 유효성 검사
+                        if(!input.value.match(reEmail)){
+                            input.classList.remove('is-valid');
+                            resultEmail.classList.remove('valid-feedback');
+
+                            spinner.classList.add('d-none');
+                            input.classList.add('is-invalid');
+                            resultEmail.classList.add('invalid-feedback');
+                            resultEmail.innerText = '이메일 형식이 알맞지 않습니다.';
+                            isEmailOk = false;
+                            return;
+                        }
+                        // 중복 검사
+                        const data = await fetchData(`/sboard/userCheck/${type}/${input.value}`);
+
+                        if(data.result > 0){
+                            input.classList.remove('is-valid');
+                            resultEmail.classList.remove('valid-feedback');
+
+                            spinner.classList.add('d-none');
+                            input.classList.add('is-invalid');
+                            resultEmail.classList.add('invalid-feedback');
+                            resultEmail.innerText = '이미 사용중인 이메일 입니다.';
+                            isEmailOk = false;
+                        }else{
+                            input.classList.remove('is-invalid');
+                            resultEmail.classList.remove('invalid-feedback');
+
+                            spinner.classList.add('d-none');
+                            input.classList.add('is-valid');
+                            resultEmail.classList.add('valid-feedback');
+                            resultEmail.innerText = '사용 가능한 이메일 입니다.';
+                            // 이메일 인증 코드 작성 태그 출력
+                            isEmailOk = true;
+                        }
+                    }, 1000);
+                }
 
                 // 최종 유효성 검사 확인
+                form.onsubmit = function(){
+                    if(!isUidOk){
+                        alert('아이디가 유효하지 않습니다.');
+                        return false; // 전송 취소
+
+                    }else if(!isPassOk){
+                        alert('비밀번호가 유효하지 않습니다.');
+                        return false; // 전송 취소
+
+                    }else if(!isNameOk){
+                        alert('이름이 유효하지 않습니다.');
+                        return false; // 전송 취소
+
+                    }else if(!isNickOk){
+                        alert('별명이 유효하지 않습니다.');
+                        return false; // 전송 취소
+
+                    }else if(!isEmailOk){
+                        alert('이메일이 유효하지 않습니다.');
+                        return false; // 전송 취소
+
+                    }else if(!isHpOk){
+                        alert('전화번호가 유효하지 않습니다.');
+                        return false; // 전송 취소
+
+                    }else{
+                        alert('가입을 진행 하시겠습니까?');
+                        return true; // 폼 전송 시작
+                    }
+                }
             }
         </script>
         <div class="row justify-content-center">
@@ -263,6 +377,7 @@
                                         <input class="form-control" id="inputName" name="name" type="text" placeholder="이름 입력"/>
                                         <label for="inputName">이름 입력</label>
                                     </div>
+                                    <div class="resultName d-block"></div>
                                 </div>
                             </div>
 
@@ -303,9 +418,13 @@
                                         <input class="form-control" id="inputEmail" name="email" type="text" placeholder="이메일 입력"/>
                                         <label for="inputEmail">이메일 입력</label>
                                     </div>
+                                    <div class="resultEmail  d-block"></div>
                                 </div>
                                 <div class="col-md-6">
-                                    <button type="button" class="btn btn-outline-secondary">이메일 인증</button>
+                                    <button type="button" class="btn btn-outline-secondary btnCheckEmail">
+                                        <span class="spinner spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+                                        <span class="" role="status">이메일 인증</span>
+                                    </button>
                                 </div>
                             </div>
 

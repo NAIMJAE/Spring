@@ -23,15 +23,19 @@ public class UserService {
         log.info("selectTerms");
         return userMapper.selectTerms();
     }
-
+    // 회원 가입
     public void insertUser(UserDTO userDTO){
         log.info("insertUser");
         String encoded = passwordEncoder.encode(userDTO.getPass());
         userDTO.setPass(encoded);
         userMapper.insertUser(userDTO);
     }
-
-    public void selectUser(){}
+    // 로그인 회원 조회
+    public int selectUser(String uid, String pass){
+        log.info("selectUser");
+        String encoded = passwordEncoder.encode(pass);
+        return userMapper.selectUser(uid, encoded);
+    }
 
     public void selectUsers(){}
 

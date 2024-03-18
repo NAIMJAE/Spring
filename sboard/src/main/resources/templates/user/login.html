@@ -1,20 +1,53 @@
 <html xmlns:th="http://www.thymeleaf.org"
       xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
       layout:decorate="/layout/userLayout.html">
-
     <div class="container" layout:fragment="content">
+        <script>
+            window.onload = function (){
+
+                const form = document.loginForm;
+                const btnSubmit = document.getElementsByClassName('btnSubmit')[0];
+
+                btnSubmit.onclick = function (e){
+                    e.preventDefault();
+
+                    const uid = form.uid.value;
+                    const pass = form.pass.value;
+                    console.log("uid : " + uid + " | pass :" + pass);
+
+                    const jsonData = {
+                        "uid" : uid,
+                        "pass" : pass
+                    }
+
+                    fetch("/sboard/user/loginCheck",{
+                        method: "POST",
+                        headers: {"content-Type": "application/json"},
+                        body: JSON.stringify(jsonData)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            console.log(data.result);
+                        })
+                        .catch(err => {
+                            console.log(err);
+                        })
+                }
+            }
+        </script>
+
         <div class="row justify-content-center">
             <div class="col-lg-5">
                 <div class="card shadow-lg border-0 rounded-lg mt-5">
-                    <div class="card-header"><h3 class="text-center font-weight-light my-4">Login</h3></div>
+                    <div class="card-header"><h3 class="text-center font-weight-light my-4">로그인</h3></div>
                     <div class="card-body">
-                        <form>
+                        <form th:action="@{/user/login}" method="post" name="loginForm">
                             <div class="form-floating mb-3">
-                                <input class="form-control" id="inputUid" type="text" placeholder="name@example.com" />
+                                <input class="form-control" id="inputUid" name="uid" type="text" placeholder="name@example.com" required  />
                                 <label for="inputUid">아이디 입력</label>
                             </div>
                             <div class="form-floating mb-3">
-                                <input class="form-control" id="inputPassword" type="password" placeholder="Password" />
+                                <input class="form-control" id="inputPassword" name="pass" type="password" placeholder="Password" required  />
                                 <label for="inputPassword">비밀번호 입력</label>
                             </div>
                             <div class="form-check mb-3">
@@ -22,8 +55,8 @@
                                 <label class="form-check-label" for="inputRememberPassword">Remember Password</label>
                             </div>
                             <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
-                                <a class="small" href="password.html">Forgot Password?</a>
-                                <a class="btn btn-primary" href="index.html">Login</a>
+                                <a class="small" href="#">Forgot Password?</a>
+                                <a class="btn btn-primary btnSubmit" href="#">로그인</a>
                             </div>
                         </form>
                     </div>

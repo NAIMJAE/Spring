@@ -4,21 +4,21 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="kr.co.sboard.mapper.UserMapper">
-
+    <!--이용 약관 조회-->
     <select id="selectTerms" resultType="kr.co.sboard.dto.TermsDTO">
         select * from terms;
     </select>
-
+    <!--회원가입-->
     <insert id="insertUser">
         insert into user set uid=#{uid}, pass=#{pass}, name=#{name}, nick=#{nick}, email=#{email},
                             hp=#{hp}, zip=#{zip}, addr1=#{addr1}, addr2=#{addr2}, regip=#{regip}, rdate=NOW();
     </insert>
-    
-    <select id="selectCheckUid" resultType="int">
-        select count(*) from user where uid = #{uid};
-    </select>
-
+    <!--회원가입 중복 체크-->
     <select id="checkUser" resultType="int">
         select count(*) from user where ${type} = #{value};
+    </select>
+    <!--로그인 사용자 조회-->
+    <select id="selectUser" resultType="int">
+        select count(*) from user where uid = #{uid} and pass = #{encoded};
     </select>
 </mapper>

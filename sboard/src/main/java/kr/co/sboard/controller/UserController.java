@@ -46,6 +46,20 @@ public class UserController {
     }
 
     // 로그인 폼 전송
+    @PostMapping("/user/loginCheck")
+    public ResponseEntity<?> loginCheck(@RequestBody UserDTO userDTO){
+        log.info("/user/loginCheck - POST");
+
+        int result = userService.selectUser(userDTO.getUid(), userDTO.getPass());
+
+        log.info("uid : " + userDTO.getUid() + " | pass : " + userDTO.getPass() + " | result : " + result);
+
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("result", result);
+        return ResponseEntity.ok().body(resultMap);
+    }
+
+    // 회원가입 폼 전송 // 비밀번호 인코딩 잘못됨
     @PostMapping("/user/register")
     public String register(HttpServletRequest req, UserDTO userDTO){
         log.info("/user/register - POST");
@@ -53,7 +67,7 @@ public class UserController {
         userDTO.setRegip(regip);
         log.info(userDTO.toString());
         userService.insertUser(userDTO);
-        return "redirect:/user/register?success=200";
+        return "redirect:/user/login?success=200";
     }
 
     // 중복 검사
