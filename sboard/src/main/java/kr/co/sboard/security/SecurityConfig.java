@@ -16,7 +16,7 @@ public class SecurityConfig {
         // 인증 설정 (로그인)
         httpSecurity.formLogin(login -> login
                                         .loginPage("/user/login")               // login 호출 URL
-                                        .defaultSuccessUrl("/user/success")     // login 성공 주소
+                                        .defaultSuccessUrl("/")     // login 성공 주소
                                         .failureUrl("/user/login?success=100")  // login 실패 주소
                                         .usernameParameter("uid")               // login시 사용할 name 파라미터
                                         .passwordParameter("pass"));            // login시 사용할 password 파라미터
@@ -24,10 +24,10 @@ public class SecurityConfig {
         httpSecurity.logout(logout -> logout
                                 .invalidateHttpSession(true)            // session 무효화 -> logout 후 새로운 session 시작
                                 .logoutRequestMatcher(new AntPathRequestMatcher("/user/logout")) // logout 호출 URL
-                                .logoutSuccessUrl("/user/login?success=200"));                     // logout 성공 주소
+                                .logoutSuccessUrl("/user/login?success=300"));                     // logout 성공 주소
         // 인가 설정
         httpSecurity.authorizeHttpRequests(authorize -> authorize
-                                    .requestMatchers("/").permitAll()
+                                    .requestMatchers("/").authenticated()//.permitAll()
                                     .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
                                     .requestMatchers("/manager/**").hasAnyAuthority("ADMIN", "MANAGER")
                                     .anyRequest().permitAll()

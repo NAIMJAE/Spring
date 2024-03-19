@@ -13,15 +13,13 @@
 
                 btnSubmit.onclick = (e) => {
                     if(agree1.checked && agree2.checked){
-
+                        form.submit();
                         return true;
                     }else{
-                        const modal = document.getElementById('resultModal')
-                        const resultModal = new bootstrap.Modal(modal);
-                        resultModal.show();
+                        showModal('이용약관과 개인정보 취급방침은 필수 동의입니다.');
                         return false;
                     }
-                };
+                }
             }
         </script>
         <div class="row justify-content-center">
@@ -29,7 +27,7 @@
                 <div class="card shadow-lg border-0 rounded-lg mt-5  mb-5">
                     <div class="card-header"><h3 class="text-center font-weight-light my-4">사이트 이용 약관</h3></div>
                     <div class="card-body">
-                        <form name="termsForm">
+                        <form name="termsForm" th:action="@{/user/terms}" method="post">
                             <div class="row mb-3">
                                 <div class="col-md-12">
                                     <h6>■ 사이트 이용약관</h6>
@@ -53,7 +51,7 @@
                             </div>
                             <div class="text-center mt-4 mb-0">
                                 <a class="btn btn-secondary btnCancel" th:href="@{/user/login}">취소</a>
-                                <a class="btn btn-primary btnNext" th:href="@{/user/register}">다음</a>
+                                <a class="btn btn-primary btnNext" href="#">다음</a>
                             </div>
                         </form>
                     </div>

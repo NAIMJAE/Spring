@@ -1,6 +1,7 @@
 package kr.co.sboard.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import kr.co.sboard.dto.TermsDTO;
 import kr.co.sboard.dto.UserDTO;
 import kr.co.sboard.service.UserService;
@@ -24,7 +25,8 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping("/user/login")
-    public String login(){
+    public String login(@ModelAttribute("success") String success){
+        // 매개변수 success에 @ModelAttribute 선언으로 View 참조할 수 있음
         log.info("/user/login - GET");
 
         return "/user/login";
@@ -38,25 +40,23 @@ public class UserController {
         return "/user/terms";
     }
 
+    @PostMapping("/user/terms")
+    public String terms(@RequestParam("agree3") String agree3, Model model){
+        log.info("/user/terms - POST");
+        String sms = null;
+        if (agree3.equals("on")){
+            model.addAttribute("sms", "Y");
+        }else if (agree3 == null || agree3.isEmpty()) {
+            model.addAttribute("sms", "N");
+        }
+        return "/user/register";
+    }
+
     @GetMapping("/user/register")
     public String register(){
         log.info("/user/register - GET");
 
         return "/user/register";
-    }
-
-    // 로그인 폼 전송
-    @PostMapping("/user/loginCheck")
-    public ResponseEntity<?> loginCheck(@RequestBody UserDTO userDTO){
-        log.info("/user/loginCheck - POST");
-
-        int result = userService.selectUser(userDTO.getUid(), userDTO.getPass());
-
-        log.info("uid : " + userDTO.getUid() + " | pass : " + userDTO.getPass() + " | result : " + result);
-
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put("result", result);
-        return ResponseEntity.ok().body(resultMap);
     }
 
     // 회원가입 폼 전송 // 비밀번호 인코딩 잘못됨
@@ -73,14 +73,42 @@ public class UserController {
     // 중복 검사
     @ResponseBody
     @GetMapping("/userCheck/{type}/{value}")
-    public ResponseEntity<?> usercheck(@PathVariable("type") String type, @PathVariable("value") String value){
+    public ResponseEntity<?> usercheck(HttpSession session, @PathVariable("type") String type, @PathVariable("value") String value){
 
         int result = userService.checkUser(type, value);
 
         log.info("type : " + type + " | value : " + value + " | result : " + result);
 
+        // 이메일 인증이면
+        if(type.equals("email")){
+            log.info("email : " + value);
+            userService.sendEmailCode(session, value);
+        }
+
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put("result", result);
         return ResponseEntity.ok().body(resultMap);
+    }
+
+    // 이메일 인증 코드 검사
+    @ResponseBody
+    @GetMapping("/email/{code}")
+    public ResponseEntity<?> checkEmail(HttpSession session, @PathVariable("code")  String code){
+
+        String sessionCode = (String) session.getAttribute("code");
+
+        if(sessionCode.equals(code)){
+            // Json 생성
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("result", true);
+
+            return ResponseEntity.ok().body(resultMap);
+        }else{
+            // Json 생성
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("result", false);
+
+            return ResponseEntity.ok().body(resultMap);
+        }
     }
 }

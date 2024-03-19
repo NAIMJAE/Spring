@@ -3,6 +3,7 @@
       layout:decorate="/layout/userLayout.html">
 
     <div class="container" layout:fragment="content">
+        <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
         <script>
             // 유효성 검사에 사용할 상태 변수
             let isUidOk = false;
@@ -29,11 +30,15 @@
                 const btnCheckNick = document.getElementsByClassName('btnCheckNick')[0];
                 const btnCheckHp = document.getElementsByClassName('btnCheckHp')[0];
                 const btnCheckEmail = document.getElementsByClassName('btnCheckEmail')[0];
+                const btnCheckEmailCode = document.getElementById('btnCheckEmailCode');
 
                 const inputPass1 = document.getElementById('inputPass1');
                 const inputPass2 = document.getElementById('inputPass2');
                 const inputName = document.getElementById('inputName');
                 const inputEmail = document.getElementById('inputEmail');
+                const inputEmailCode = document.getElementById('inputEmailCode');
+                const divEmailCode = document.getElementById('divEmailCode');
+                const inputZip = document.getElementById('inputZip');
 
                 const resultUid = document.getElementsByClassName('resultUid')[0];
                 const resultNick = document.getElementsByClassName('resultNick')[0];
@@ -42,6 +47,8 @@
                 const resultPass2 = document.getElementsByClassName('resultPass2')[0];
                 const resultName = document.getElementsByClassName('resultName')[0];
                 const resultEmail = document.getElementsByClassName('resultEmail')[0];
+
+
 
                 // 아이디 유효성 & 중복 검사
                 btnCheckUid.onclick = function (){
@@ -107,7 +114,6 @@
                             resultPass1.classList.add('invalid-feedback');
                             resultPass1.innerText = '비밀번호 형식이 알맞지 않습니다.';
                             isPassOk = false;
-                            return;
                         }else {
                             pass.classList.remove('is-invalid');
                             pass2.classList.remove('is-invalid');
@@ -133,7 +139,6 @@
                         resultPass2.classList.add('invalid-feedback');
                         resultPass2.innerText = '비밀번호가 일치하지 않습니다.';
                         isPassOk = false;
-                        return;
                     }
                 })
 
@@ -151,7 +156,6 @@
                             resultName.classList.add('invalid-feedback');
                             resultName.innerText = '이름 형식이 알맞지 않습니다.';
                             isNameOk = false;
-                            return;
                         }else {
                             input.classList.remove('is-invalid');
                             resultName.classList.remove('invalid-feedback');
@@ -261,20 +265,24 @@
                     const spinner = this.getElementsByClassName('spinner')[0];
                     spinner.classList.remove('d-none');
 
-                    setTimeout(async () => {
-                        // 유효성 검사
-                        if(!input.value.match(reEmail)){
-                            input.classList.remove('is-valid');
-                            resultEmail.classList.remove('valid-feedback');
+                    // 유효성 검사
+                    if(!input.value.match(reEmail)){
+                        input.classList.remove('is-valid');
+                        resultEmail.classList.remove('valid-feedback');
 
-                            spinner.classList.add('d-none');
-                            input.classList.add('is-invalid');
-                            resultEmail.classList.add('invalid-feedback');
-                            resultEmail.innerText = '이메일 형식이 알맞지 않습니다.';
-                            isEmailOk = false;
-                            return;
-                        }
-                        // 중복 검사
+                        spinner.classList.add('d-none');
+                        input.classList.add('is-invalid');
+                        resultEmail.classList.add('invalid-feedback');
+                        resultEmail.innerText = '이메일 형식이 알맞지 않습니다.';
+                        isEmailOk = false;
+                        return;
+                    }
+                    // 중복 검사
+                    setTimeout(async () => {
+                        // 인증코드 입력 필드 활성화
+                        spinner.classList.add('d-none');
+                        divEmailCode.classList.remove('d-none');
+
                         const data = await fetchData(`/sboard/userCheck/${type}/${input.value}`);
 
                         if(data.result > 0){
@@ -286,22 +294,40 @@
                             resultEmail.classList.add('invalid-feedback');
                             resultEmail.innerText = '이미 사용중인 이메일 입니다.';
                             isEmailOk = false;
-                        }else{
-                            input.classList.remove('is-invalid');
-                            resultEmail.classList.remove('invalid-feedback');
-
-                            spinner.classList.add('d-none');
-                            input.classList.add('is-valid');
-                            resultEmail.classList.add('valid-feedback');
-                            resultEmail.innerText = '사용 가능한 이메일 입니다.';
-                            // 이메일 인증 코드 작성 태그 출력
-                            isEmailOk = true;
                         }
                     }, 1000);
                 }
 
+                // 이메일 인증코드 확인
+                btnCheckEmailCode.onclick = async function (){
+                    const data = await fetchData(`/sboard/email/${inputEmailCode.value}`);
+
+                    if(!data.result){
+                        inputEmail.classList.add('is-invalid');
+                        inputEmailCode.classList.add('is-invalid');
+                        resultEmail.classList.add('invalid-feedback');
+                        resultEmail.innerText = '인증코드가 일치하지 않습니다.';
+                        isEmailOk = false;
+                    }else{
+                        inputEmail.classList.add('is-valid');
+                        inputEmailCode.classList.add('is-valid');
+                        resultEmail.classList.add('valid-feedback');
+                        resultEmail.innerText = '이메일이 인증되었습니다.';
+                        isEmailOk = true;
+                    }
+                }
+
+                // 우편번호 주소검색
+                // 다음 우편번호 API 스크립트 상단 추가, postcode 함수 util.js 파일 추가
+                inputZip.onclick = function (){
+                    postcode();
+                }
+
                 // 최종 유효성 검사 확인
                 form.onsubmit = function(){
+                    console.log("isUidOk : " + isUidOk + " || isPassOk : " + isPassOk);
+                    console.log("isNameOk : " + isNameOk + " || isNickOk : " + isNickOk);
+                    console.log("isEmailOk : " + isEmailOk + " || isHpOk : " + isHpOk);
                     if(!isUidOk){
                         alert('아이디가 유효하지 않습니다.');
                         return false; // 전송 취소
@@ -326,10 +352,8 @@
                         alert('전화번호가 유효하지 않습니다.');
                         return false; // 전송 취소
 
-                    }else{
-                        alert('가입을 진행 하시겠습니까?');
-                        return true; // 폼 전송 시작
                     }
+                    return true; // 폼 전송 시작
                 }
             }
         </script>
@@ -339,11 +363,12 @@
                     <div class="card-header"><h3 class="text-center font-weight-light my-4">회원가입</h3></div>
                     <div class="card-body">
                         <form th:action="@{/user/register}" method="post" name="registerForm">
+                            <input type="hidden" name="sms" th:value="${sms}"/>
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <div class="form-floating mb-3 mb-md-0">
                                         <input class="form-control" id="inputUid" type="text" name="uid" placeholder="아이디 입력"/>
-                                        <label for="inputUid">아이디 입력</label>
+                                        <label for="inputUid">아이디 입력 </label>
                                     </div>
                                     <div class="resultUid  d-block"></div>
                                 </div>
@@ -428,17 +453,27 @@
                                 </div>
                             </div>
 
+                            <div id="divEmailCode" class="row mb-3 d-none">
+                                <div class="col-md-6">
+                                    <div class="form-floating mb-3 mb-md-0">
+                                        <input class="form-control" id="inputEmailCode" name="code" type="text" placeholder="이메일 인증코드 입력"/>
+                                        <label for="inputEmail">이메일 인증코드 입력</label>
+                                    </div>
+                                    <div id="resultEmailCode" class="d-block"></div>
+                                </div>
+                                <div class="col-md-6">
+                                    <button type="button" class="btn btn-outline-secondary" id="btnCheckEmailCode" data-type="email">
+                                        <span class="spinner spinner-border spinner-border-sm d-none" aria-hidden="true"></span>
+                                        <span class="" role="status">인증코드 확인</span>
+                                    </button>
+                                </div>
+                            </div>
+
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <div class="form-floating mb-3 mb-md-0">
                                         <input class="form-control" id="inputZip" name="zip" type="text" placeholder="우편번호 검색"/>
                                         <label for="inputZip">우편번호 검색</label>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <button type="button" class="btn btn-outline-secondary">우편번호 검색</button>
-                                    <div class="invalid-feedback">
-                                        Please choose a username.
                                     </div>
                                 </div>
                             </div>
