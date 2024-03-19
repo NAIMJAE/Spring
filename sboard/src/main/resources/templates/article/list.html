@@ -27,10 +27,10 @@
                         </thead>
 
                         <tbody>
-                            <tr th:each="article:${articles}">
-                                <td th:text="${article.no}"></td>
+                            <tr th:each="article, iterStat : ${articles}">
+                                <td th:text="${articleStartNum - (iterStat.count - 1)}"></td>
                                 <td>
-                                    <a href="#" th:text="${article.title}"></a>
+                                    <a th:href="@{/article/view(no=${article.no})}" th:text="${article.title}"></a>
                                 </td>
                                 <td th:text="${article.writer}"></td>
                                 <td th:text="${article.hit}"></td>
@@ -40,6 +40,30 @@
                     </table>
                 </div>
             </div>
+            <div>
+                <nav aria-label="...">
+                    <ul class="pagination">
+                        <th:block th:if="${currentPg > 10}">
+                            <li class="page-item">
+                                <a class="page-link" th:href="@{/article/list(cate=${cate}, pg=${startPagination - 1})}">이전</a>
+                            </li>
+                        </th:block>
+
+                        <th:block th:each="n : ${#numbers.sequence(startPagination, endPagination)}">
+                            <li class="page-item" th:classappend="${currentPg == n ? 'active' : ''}">
+                                <a class="page-link" th:href="@{/article/list(cate=${cate}, pg=${n})}" th:text="${n}"></a>
+                            </li>
+                        </th:block>
+
+                        <th:block th:if="${currentPg < lastPageNum}">
+                            <li class="page-item">
+                                <a class="page-link" th:href="@{/article/list(cate=${cate}, pg=${endPagination + 1})}">다음</a>
+                            </li>
+                        </th:block>
+                    </ul>
+                </nav>
+            </div>
+
             <div class="text-end">
                 <a th:href="@{/article/write(cate=${cate})}" class="btn btn-primary">글쓰기</a>
             </div>
