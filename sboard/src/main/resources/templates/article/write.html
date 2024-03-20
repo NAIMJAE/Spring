@@ -29,7 +29,7 @@
                 <div class="card-body">
 
             <!--글쓰기-->
-                    <form name="formWrite" th:action="@{/article/write}" method="post">
+                    <form name="formWrite" th:action="@{/article/write}" method="post" enctype="multipart/form-data">
                         <input type="text" name="writer" th:value="${#authentication.principal.user.uid}">
                         <input type="text" name="cate" th:value="${cate}">
                         <div class="mb-3">
@@ -43,7 +43,7 @@
                 <!--파일 첨부-->
                         <div class="mb-3">
                             <label for="formFileMultiple" class="form-label">첨부파일</label>
-                            <input class="form-control" type="file" id="formFileMultiple" multiple>
+                            <input class="form-control" type="file" name="files" id="formFileMultiple" multiple>
                         </div>
                     </form>
                 </div>

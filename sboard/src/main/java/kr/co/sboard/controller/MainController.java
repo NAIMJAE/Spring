@@ -42,7 +42,6 @@ public class MainController {
         model.addAttribute("appName", appName);
         model.addAttribute("appVersion", appVersion);
         model.addAttribute("userEmail", user.getEmail());
-
         return "/index";
     }
 }

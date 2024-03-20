@@ -3,8 +3,10 @@ package kr.co.sboard.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Fetch;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @ToString
@@ -25,8 +27,12 @@ public class Article {
     private int file;
     private int hit;
     private String writer;
+
     private String regip;
+
     @CreationTimestamp
     private LocalDateTime rdate;
-    // toDTO
+
+    @OneToMany(mappedBy = "ano")
+    private List<File> fileList;
 }

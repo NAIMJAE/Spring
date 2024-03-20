@@ -28,6 +28,7 @@ public class SecurityConfig {
         // 인가 설정
         httpSecurity.authorizeHttpRequests(authorize -> authorize
                                     .requestMatchers("/").authenticated()//.permitAll()
+                                    .requestMatchers("/article/**").permitAll()
                                     .requestMatchers("/admin/**").hasAnyAuthority("ADMIN")
                                     .requestMatchers("/manager/**").hasAnyAuthority("ADMIN", "MANAGER")
                                     .anyRequest().permitAll()

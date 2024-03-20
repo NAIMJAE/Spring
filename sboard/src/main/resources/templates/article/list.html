@@ -27,45 +27,44 @@
                         </thead>
 
                         <tbody>
-                            <tr th:each="article, iterStat : ${articles}">
-                                <td th:text="${articleStartNum - (iterStat.count - 1)}"></td>
+                            <tr th:each="article, index : ${pageResponseDTO.dtoList}">
+                                <td th:text="${pageResponseDTO.startNo - index.index}"></td>
                                 <td>
-                                    <a th:href="@{/article/view(no=${article.no})}" th:text="${article.title}"></a>
+                                    <a th:href="@{/article/view(cate=${article.cate}, no=${article.no})}" th:text="${article.title}"></a>
                                 </td>
                                 <td th:text="${article.writer}"></td>
                                 <td th:text="${article.hit}"></td>
-                                <td th:text="${article.rdate}"></td>
+                                <td th:text="${#strings.substring(article.rdate, 0, 10)}"></td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
+                <div>
+                    <nav aria-label="Page navigation example">
+                        <ul class="pagination justify-content-center">
+                            <th:block th:if="${pageResponseDTO.prev}">
+                                <li class="page-item">
+                                    <a class="page-link" th:href="@{/article/list(cate=${pageResponseDTO.cate}, pg=${pageResponseDTO.start - 1})}">이전</a>
+                                </li>
+                            </th:block>
+
+                            <th:block th:each="n : ${#numbers.sequence(pageResponseDTO.start, pageResponseDTO.end)}">
+                                <li class="page-item" th:classappend="${pageResponseDTO.pg == n ? 'active' : ''}">
+                                    <a class="page-link" th:href="@{/article/list(cate=${pageResponseDTO.cate}, pg=${n})}" th:text="${n}"></a>
+                                </li>
+                            </th:block>
+
+                            <th:block th:if="${pageResponseDTO.next}">
+                                <li class="page-item">
+                                    <a class="page-link" th:href="@{/article/list(cate=${pageResponseDTO.cate}, pg=${pageResponseDTO.end + 1})}">다음</a>
+                                </li>
+                            </th:block>
+                        </ul>
+                    </nav>
+                </div>
             </div>
-            <div>
-                <nav aria-label="...">
-                    <ul class="pagination">
-                        <th:block th:if="${currentPg > 10}">
-                            <li class="page-item">
-                                <a class="page-link" th:href="@{/article/list(cate=${cate}, pg=${startPagination - 1})}">이전</a>
-                            </li>
-                        </th:block>
-
-                        <th:block th:each="n : ${#numbers.sequence(startPagination, endPagination)}">
-                            <li class="page-item" th:classappend="${currentPg == n ? 'active' : ''}">
-                                <a class="page-link" th:href="@{/article/list(cate=${cate}, pg=${n})}" th:text="${n}"></a>
-                            </li>
-                        </th:block>
-
-                        <th:block th:if="${currentPg < lastPageNum}">
-                            <li class="page-item">
-                                <a class="page-link" th:href="@{/article/list(cate=${cate}, pg=${endPagination + 1})}">다음</a>
-                            </li>
-                        </th:block>
-                    </ul>
-                </nav>
-            </div>
-
             <div class="text-end">
-                <a th:href="@{/article/write(cate=${cate})}" class="btn btn-primary">글쓰기</a>
+                <a th:href="@{/article/write(cate=${pageResponseDTO.cate})}" class="btn btn-primary">글쓰기</a>
             </div>
         </div>
     <!--내용 끝-->

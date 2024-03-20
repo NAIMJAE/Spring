@@ -2,16 +2,19 @@ package kr.co.sboard.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import kr.co.sboard.dto.ArticleDTO;
+import kr.co.sboard.dto.FileDTO;
+import kr.co.sboard.dto.PageRequestDTO;
+import kr.co.sboard.dto.PageResponseDTO;
+import kr.co.sboard.entity.Article;
 import kr.co.sboard.service.ArticleService;
+import kr.co.sboard.service.FileService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -21,6 +24,7 @@ import java.util.List;
 public class ArticleController {
 
     private final ArticleService articleService;
+    private final FileService fileService;
 
     /*
         @ModelAttribute("cate")
@@ -28,45 +32,15 @@ public class ArticleController {
     */
     // 게시물 조회 (10개씩)
     @GetMapping("/article/list")
-    public String list(@ModelAttribute("cate") String cate,
-                       @ModelAttribute("pg") String pg, Model model){
+    public String list(Model model, PageRequestDTO pageRequestDTO){
         log.info("/article/list - GET");
-        // 현재 페이지 번호
-        log.info("pg : "+pg);
-        int currentPg = 1;
-        if(pg != null && !pg.isEmpty()){
-            currentPg = Integer.parseInt(pg);
-        }
-        // DB 조회에서 사용하는 시작 넘버
-        int startNum = (currentPg-1)*10;
-        // 총 페이지 수
-        int totalCount = articleService.selectArticleCount(cate);
-        int lastPageNum = (int) Math.ceil((double)totalCount/10);
-        log.info("totalCount : "+totalCount);
-        log.info("lastPageNum : "+lastPageNum);
-        // Pagination 시작, 끝
-        int startPagination = (((int)Math.ceil((double)currentPg/10)-1)*10)+1;
-        int endPagination = ((int)Math.ceil((double)currentPg/10)*10);
-        if (endPagination > lastPageNum){
-            endPagination = lastPageNum;
-        }
-        // 게시글 목록 번호
-        int articleStartNum = totalCount - startNum;
+        log.info(pageRequestDTO.toString());
         // 게시판 종류별 게시물 10개씩 조회
-        List<ArticleDTO> articles = articleService.selectArticleForCate(cate, currentPg);
-        // 모델 전송
-        model.addAttribute("currentPg", currentPg);
-        model.addAttribute("startPagination", startPagination);
-        model.addAttribute("endPagination", endPagination);
-        model.addAttribute("lastPageNum", lastPageNum);
-        model.addAttribute("articleStartNum", articleStartNum);
-        model.addAttribute("cate", cate);
-        model.addAttribute("articles", articles);
+        PageResponseDTO pageResponseDTO = articleService.selectArticleForCate(pageRequestDTO);
+        model.addAttribute("pageResponseDTO", pageResponseDTO);
 
         return "/article/list";
     }
-
-
 
     @GetMapping("/article/write")
     public String write(@ModelAttribute("cate") String cate){
@@ -74,6 +48,7 @@ public class ArticleController {
         return "/article/write";
     }
 
+    // 게시글 작성
     @PostMapping("/article/write")
     public String write(HttpServletRequest req, ArticleDTO articleDTO){
         log.info("/article/write - POST");
@@ -89,5 +64,42 @@ public class ArticleController {
         articleService.insertArticle(articleDTO);
 
         return "redirect:/article/list";
+    }
+    // 게시글 출력 1개 (/article/view)
+    @GetMapping("/article/view")
+    public String view(String cate, int no, Model model){
+        log.info("/article/view - GET");
+        // 게시글 내용 조회
+        ArticleDTO article = articleService.selectArticle(no);
+        log.info("article" + article.toString());
+        
+        // 게시글 조회수 카운트 +1
+        
+        
+        // 댓글 조회
+
+        
+        model.addAttribute("article", article);
+        return "/article/view";
+    }
+    
+    // 파일 다운로드
+    @GetMapping("/article/fileDownload")
+    public ResponseEntity<?> fileDownload(int fno){
+        return fileService.fileDownload(fno);
+    }
+    
+    
+    // 댓글 작성
+    @PostMapping("/article/comment")
+    public ResponseEntity<?> comment(HttpServletRequest req,@RequestBody ArticleDTO articleDTO){
+        log.info("/article/comment - POST");
+
+        String regip = req.getRemoteAddr();
+        articleDTO.setRegip(regip);
+
+        log.info(articleDTO.toString());
+
+        return articleService.insertComment(articleDTO);
     }
 }

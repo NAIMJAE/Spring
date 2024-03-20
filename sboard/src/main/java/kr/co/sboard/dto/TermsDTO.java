@@ -1,10 +1,13 @@
 package kr.co.sboard.dto;
 
 import kr.co.sboard.entity.Terms;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 @Builder
 public class TermsDTO {
     private String terms;

@@ -1,8 +1,11 @@
 package kr.co.sboard.dto;
 
 import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
 @Setter
 @Getter
 @ToString
@@ -21,5 +24,9 @@ public class ArticleDTO {
     private String writer;
     private String regip;
     private LocalDateTime rdate;
-    // toEntity
+    // 파일 수신 (파일 여러개 수신이라 list)
+    private List<MultipartFile> files;
+
+    private UserDTO user;
+    private List<FileDTO> fileList;
 }

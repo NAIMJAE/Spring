@@ -1,8 +1,6 @@
 package kr.co.sboard.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import kr.co.sboard.dto.UserDTO;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,4 +33,6 @@ public class User {
     @CreationTimestamp
     private LocalDateTime rdate;
     private LocalDateTime leaveDate;
+
+
 }

@@ -1,12 +1,15 @@
 package kr.co.sboard.dto;
 
 import kr.co.sboard.entity.User;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@ToString
 @Builder
 public class UserDTO {
     private String uid;
