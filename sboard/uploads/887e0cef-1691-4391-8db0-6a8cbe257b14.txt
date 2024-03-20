@@ -1,0 +1,9 @@
+login.jsp -> 아이디, 비번 입력 -> btn click -> js addeventlistener
+-> fetch -> logincheck (get) -> service -> DAO -> DB Check
+
+-> DAO return -> loginCheck -> response 
+-> fetch response -> then isuidok true
+-> result form.submit -> form action="login.do" method="post"
+
+-> login (post) -> service -> DAO -> DB Check
+-> DAO return -> login -> response -> index.jsp

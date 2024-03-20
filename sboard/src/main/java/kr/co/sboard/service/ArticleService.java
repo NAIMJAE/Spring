@@ -131,7 +131,18 @@ public class ArticleService {
                 .status(HttpStatus.OK)
                 .body(result);
     }
-
+    // 댓글 조회
+    public List<ArticleDTO> selectComment(int no){
+        List<Article> articles = articleRepository.findByParent(no);
+        log.info("articles : " + articles);
+        List<ArticleDTO> articleDTOs = new ArrayList<>();
+        for(Article article : articles) {
+            ArticleDTO result = modelMapper.map(article, ArticleDTO.class);
+            articleDTOs.add(result);
+            log.info("result : " + result.toString());
+        }
+        return articleDTOs;
+    }
 
 
 

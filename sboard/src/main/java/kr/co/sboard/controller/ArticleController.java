@@ -77,9 +77,12 @@ public class ArticleController {
         
         
         // 댓글 조회
+        List<ArticleDTO> comments = articleService.selectComment(no);
 
-        
+        log.info("comments : " + comments);
+
         model.addAttribute("article", article);
+        model.addAttribute("comments", comments);
         return "/article/view";
     }
     

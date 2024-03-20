@@ -12,11 +12,15 @@
 
                     // 댓글 작성
                     const CommentForm = document.CommentForm;
+                    const ul = document.getElementById('commentUl');
                     const btnCommentSubmit = document.getElementById('btnCommentSubmit');
                     const btnCommentCancel = document.getElementById('btnCommentCancel');
+                   // const btnCommentDelete = document.querySelectorAll('.btnCommentDelete');
+                    //const btnCommentDeleteArray = document.querySelectorAll('.btnCommentDelete');
+                   // const btnCommentModify = document.querySelectorAll('.btnCommentModify');
 
                     btnCommentSubmit.onclick = function (){
-                        const parent = CommentForm.writer.parent;
+                        const parent = CommentForm.parent.value;
                         const writer = CommentForm.writer.value;
                         const content = CommentForm.content.value;
 
@@ -25,7 +29,6 @@
                             "writer" : writer,
                             "content" : content
                         }
-
                         if (content != null){
                             // 입력
                             fetch("/sboard/article/comment",{
@@ -36,20 +39,49 @@
                                 .then(response => response.json())
                                 .then(data => {
                                     console.log(data);
-
+                                    // 날짜 자르기
+                                    const date = data.rdate.substring(0, 10);
                                     // 방금 작성한 댓글 동적으로 태그 생성
+                                    const il =
+                                        `<li class="list-group-item d-flex justify-content-between align-items-start">
+                                            <div class="ms-2 me-auto col-sm-10">
+                                                <div class="fw-bold">${data.writer} | ${date}</div>
+                                                <textarea class="col-sm-12 border-0" style="outline: none; resize: none;" readonly>${data.content}</textarea>
+                                            </div>
+                                            <button type="button" class="me-2 mt-2 btn btn-sm btn-outline-secondary btnCommentDelete">삭제</button>
+                                            <button type="button" class="mt-2 btn btn-sm btn-outline-secondary btnCommentModify">수정</button>
+                                        </li>`
+                                    ul.insertAdjacentHTML('beforeend', il);
 
-
+                                    CommentForm.content.value = "";
                                     alert("댓글을 작성했습니다.")
-
                                 })
                                 .catch(err => {
                                     console.log(err);
                                 })
-                        }else{
+                        } else {
                             alert("댓글 내용을 입력해주세요.")
                         }
                     }
+                    // 댓글 취소
+                    btnCommentCancel.onclick = function () {
+                        CommentForm.content.value = "";
+                    }
+                    // 댓글 삭제
+
+                    // 댓글 수정
+                    const btnCommentModify = document.querySelectorAll('.btnCommentModify');
+
+                    btnCommentModify.forEach(function (item) {
+                        item.addEventListener('click', function (e) {
+
+                            const textarea = e.target.parentElement.querySelector('textarea');
+                            textarea.readOnly = false;
+                            textarea.style.outline = "1px solid #111"
+                            textarea.focus();
+                            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+                        });
+                    });
                 }
             </script>
 
@@ -105,25 +137,26 @@
                             <textarea class="form-control" name="content" id="exampleFormControlTextarea2" rows="3"></textarea>
                         </div>
                         <div class="text-end">
-                            <button type="button" class="btn btn-secondary" id="btnCommentCancel">취소</button>
-                            <button type="button" class="btn btn-primary" id="btnCommentSubmit">작성</button>
+                            <button type="button" class="btn btn-secondary btn-sm" id="btnCommentCancel">취소</button>
+                            <button type="button" class="btn btn-primary btn-sm" id="btnCommentSubmit">작성</button>
                         </div>
                     </form>
+
                 <!--댓글 목록-->
-                    <div class="card mt-4 mb-4">
-                        <div class="card-header p-0 px-2 d-flex mb-2">
-                            <div class="p-2">
-                                댓글 작성자 / 작성 시간
+                    <label for="commentUl" class="form-label"><br>댓글 목록</label>
+                    <ul class="list-group list-group" id="commentUl">
+                        <li class="list-group-item d-flex justify-content-between align-items-start" th:each="comment : ${comments}">
+                            <div class="ms-2 me-auto col-sm-10">
+                                <div class="fw-bold">[[${comment.writer}]] | [[${#strings.substring(comment.rdate, 0, 10)}]]</div>
+                                <textarea class="col-sm-12 border-0" style="outline: none; resize: none;" readonly>[[${comment.content}]]</textarea>
                             </div>
-                            <div class="ms-auto p-2">
-                                <button type="button" class="btn btn-secondary btn-sm">삭제</button>
-                                <button type="button" class="btn btn-primary btn-sm">수정</button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <p class="card-text">댓글 내용 / 동해물과 백두산이 마르고</p>
-                        </div>
-                    </div>
+                            <button type="button" class="me-2 mt-2 btn btn-sm btn-outline-secondary btnCommentDelete">삭제</button>
+                            <!-- th:href="@{/article/commentDelete(parent=${comment.parent})}"-->
+                            <button type="button" class="mt-2 btn btn-sm btn-outline-secondary btnCommentModify">수정</button>
+                            <!-- th:href="@{/article/commentModify(parent=${comment.parent})}-->
+                        </li>
+                    </ul>
+
                 </div> <!--card-body end-->
             </div>
 
