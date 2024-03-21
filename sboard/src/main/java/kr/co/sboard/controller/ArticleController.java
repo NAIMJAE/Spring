@@ -26,12 +26,7 @@ import java.util.List;
 public class ArticleController {
 
     private final ArticleService articleService;
-    private final FileService fileService;
 
-    /*
-        @ModelAttribute("cate")
-         - modelAttribute("cate", cate)와 동일
-    */
     // 게시물 조회 (10개씩)
     @GetMapping("/article/list")
     public String list(Model model, PageRequestDTO pageRequestDTO){
@@ -43,30 +38,14 @@ public class ArticleController {
 
         return "/article/list";
     }
-
+    
+    // 게시글 작성 페이지 매핑
     @GetMapping("/article/write")
     public String write(@ModelAttribute("cate") String cate){
         log.info("/article/write - GET");
         return "/article/write";
     }
 
-    // 게시글 작성
-    @PostMapping("/article/write")
-    public String write(HttpServletRequest req, ArticleDTO articleDTO){
-        log.info("/article/write - POST");
-
-        String cate = articleDTO.getCate();
-        String regip = req.getRemoteAddr();
-        LocalDateTime rdate = LocalDateTime.now();
-        articleDTO.setRegip(regip);
-        articleDTO.setRdate(rdate);
-
-        log.info(articleDTO.toString());
-
-        articleService.insertArticle(articleDTO);
-
-        return "redirect:/article/list";
-    }
     // 게시글 출력 1개 (/article/view)
     @GetMapping("/article/view")
     public String view(String cate, int no, Model model){
@@ -80,7 +59,25 @@ public class ArticleController {
         model.addAttribute("comments", comments);
         return "/article/view";
     }
+
+    // 게시글 작성
+    @PostMapping("/article/write")
+    public String write(HttpServletRequest req, ArticleDTO articleDTO){
+        log.info("/article/write - POST");
+
+        String regip = req.getRemoteAddr();
+        LocalDateTime rdate = LocalDateTime.now();
+        articleDTO.setRegip(regip);
+        articleDTO.setRdate(rdate);
+
+        log.info(articleDTO.toString());
+
+        articleService.insertArticle(articleDTO);
+
+        return "redirect:/article/list";
+    }
     
+    // 게시글 수정 페이지 매핑
     @GetMapping("/article/modify")
     public String modify(int no, Model model){
         log.info("/article/modify - GET");
@@ -89,14 +86,24 @@ public class ArticleController {
         return "/article/modify";
     }
     
-    // 파일 다운로드
-    @GetMapping("/article/fileDownload")
-    public ResponseEntity<?> fileDownload(int fno){
-        return fileService.fileDownload(fno);
-    }
-    // 파일 삭제
+    // 게시글 수정
+    @PostMapping("/article/modify")
+    public String modify(HttpServletRequest req, ArticleDTO articleDTO){
+        log.info("/article/modify - POST");
 
-    
+        String cate = articleDTO.getCate();
+        String regip = req.getRemoteAddr();
+        LocalDateTime rdate = LocalDateTime.now();
+        articleDTO.setRegip(regip);
+        articleDTO.setRdate(rdate);
+
+        log.info(articleDTO.toString());
+
+        articleService.updateArticle(articleDTO);
+
+        return "redirect:/article/list";
+    }
+
     // 댓글 작성
     @PostMapping("/article/comment")
     public ResponseEntity<?> comment(HttpServletRequest req,@RequestBody ArticleDTO articleDTO){

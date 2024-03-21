@@ -97,6 +97,35 @@ public class ArticleService {
         return articleRepository.countByCateAndParent(cate, 0);
     }
 
+    // 게시글 수정
+    public void updateArticle(ArticleDTO articleDTO){
+        // 파일 업로드
+        List<FileDTO> files = fileService.fileUpload(articleDTO);
+        Optional<Article> optArticle = articleRepository.findById(articleDTO.getNo());
+        // 파일 첨부 갯수 초기화
+        int oldfile = optArticle.get().getFile();
+        int newfile = files.size();
+        log.info("oldfile : " + oldfile);
+        log.info("newfile : " + newfile);
+        articleDTO.setFile(oldfile + newfile);
+
+        // Entity로 변환
+        Article article = modelMapper.map(articleDTO, Article.class);
+        // 게시물 내용 저장 (article) 후 entity 객체 반환
+        // (JPA save() 메서드는 default로 저장한 Entity를 반환)
+        Article savedArticle = articleRepository.save(article);
+        log.info("insertArticle : " + savedArticle.toString());
+
+        // 파일 내용 저장 (file)
+        for(FileDTO fileDTO : files){
+            fileDTO.setAno(savedArticle.getNo());
+
+            // 여기서 에러나는데 RootConfig 파일에 ModelMapper 설정에 이거 추가 -> .setMatchingStrategy(MatchingStrategies.STRICT)
+            File file = modelMapper.map(fileDTO, File.class);
+            fileRepository.save(file);
+        }
+    }
+
     // 첨부 파일 조회
     public List<FileDTO> selectFiles(int ano){
         List<File> files = fileRepository.findByAno(ano);

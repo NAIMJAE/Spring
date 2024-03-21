@@ -32,4 +32,6 @@ public class FileController {
         log.info("fileDelete : " + fno);
         fileService.fileDelete(fno);
     }
+
+
 }

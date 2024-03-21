@@ -32,11 +32,15 @@
                         // 파일 삭제
                         if(deleteList != null){
                             for (const fno of deleteList){
-                                const data = fetchData(`/file/delete/${fno}`)
-                                console.log(data);
+                                fetch(`/sboard/file/delete/${fno}`)
+                                    .then(response => response.json())
+                                    .then(date => {
+                                        console.log(data);
+                                    })
+                                    .catch(err => console.log(err))
                             }
                         }
-
+                        // 폼 전송
                         document.formWrite.submit();
                     }
                 }
@@ -54,7 +58,7 @@
                 <div class="card-body">
 
             <!--글쓰기-->
-                    <form name="formWrite" th:action="@{/article/write}" method="post" enctype="multipart/form-data">
+                    <form name="formWrite" th:action="@{/article/modify}" method="post" enctype="multipart/form-data">
                         <input type="text" name="no" th:value="${article.no}">
                         <input type="text" name="writer" th:value="${#authentication.principal.user.uid}">
                         <input type="text" name="cate" th:value="${article.cate}">

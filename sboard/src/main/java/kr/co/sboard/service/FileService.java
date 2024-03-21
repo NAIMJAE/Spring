@@ -102,6 +102,7 @@ public class FileService {
             return new ResponseEntity<>(null, null, HttpStatus.NOT_FOUND);
         }
     }
+
     public ResponseEntity<?> fileDownloadCount(int fno)  {
         log.info("fileDownloadCount");
         // 파일 조회
@@ -118,22 +119,33 @@ public class FileService {
     }
     
     // 파일 삭제
+    @Transactional
     public void fileDelete(int fno){
         // 삭제 전 조회
         Optional<kr.co.sboard.entity.File> Optfile = fileRepository.findById(fno);
+        log.info("Optfile : " + Optfile);
         if(Optfile.isPresent()){
             int ano = Optfile.get().getAno();
+            log.info("ano : " + ano);
+            String fileName = Optfile.get().getSName();
             // 디비 삭제 & file 카운트 -1
             fileRepository.deleteById(fno);
             Optional<Article> optArticle = articleRepository.findById(ano);
+            log.info("optArticle : " + optArticle);
             if (optArticle.isPresent()){
                 Article article = optArticle.get();
+                log.info("file1 : " + article.getFile());
                 article.setFile(article.getFile() -1);
+                log.info("file2 : " + article.getFile());
                 articleRepository.save(article);
             }
+            // uploads의 파일 삭제
+            File deleteFile = new File(fileUploadPath, fileName);
+            if (deleteFile.delete()){
+                log.info("성공");
+            }else{
+                log.info("실패");
+            }
         }
-        // uploads의 파일 삭제
-
-
     }
 }
