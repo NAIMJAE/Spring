@@ -10,12 +10,14 @@ import kr.co.sboard.service.ArticleService;
 import kr.co.sboard.service.FileService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -52,12 +54,12 @@ public class ArticleController {
     @PostMapping("/article/write")
     public String write(HttpServletRequest req, ArticleDTO articleDTO){
         log.info("/article/write - POST");
-        /*
-            글작성을 테스트할 때는 로그인해야하기 때문에
-            SecurityConfig 인가 설정 수정할 것
-        */
+
+        String cate = articleDTO.getCate();
         String regip = req.getRemoteAddr();
+        LocalDateTime rdate = LocalDateTime.now();
         articleDTO.setRegip(regip);
+        articleDTO.setRdate(rdate);
 
         log.info(articleDTO.toString());
 
@@ -71,19 +73,20 @@ public class ArticleController {
         log.info("/article/view - GET");
         // 게시글 내용 조회
         ArticleDTO article = articleService.selectArticle(no);
-        log.info("article" + article.toString());
-        
-        // 게시글 조회수 카운트 +1
-        
-        
+
         // 댓글 조회
         List<ArticleDTO> comments = articleService.selectComment(no);
-
-        log.info("comments : " + comments);
-
         model.addAttribute("article", article);
         model.addAttribute("comments", comments);
         return "/article/view";
+    }
+    
+    @GetMapping("/article/modify")
+    public String modify(int no, Model model){
+        log.info("/article/modify - GET");
+        ArticleDTO article = articleService.selectArticle(no);
+        model.addAttribute("article", article);
+        return "/article/modify";
     }
     
     // 파일 다운로드
@@ -91,7 +94,8 @@ public class ArticleController {
     public ResponseEntity<?> fileDownload(int fno){
         return fileService.fileDownload(fno);
     }
-    
+    // 파일 삭제
+
     
     // 댓글 작성
     @PostMapping("/article/comment")
@@ -104,5 +108,21 @@ public class ArticleController {
         log.info(articleDTO.toString());
 
         return articleService.insertComment(articleDTO);
+    }
+
+    // 댓글 삭제
+    @ResponseBody
+    @GetMapping("/article/commentDelete/{no}")
+    public ResponseEntity<?> commentDelete(@PathVariable("no") int no){
+        log.info("/article/commentDelete - GET");
+        return articleService.deleteComment(no);
+    }
+
+    // 댓글 수정
+    @ResponseBody
+    @GetMapping("/article/commentModify/{no}/{content}")
+    public ResponseEntity<?> commentDelete(@PathVariable("no") int no, @PathVariable("content") String content){
+        log.info("/article/commentModify - GET");
+        return articleService.modifyComment(no, content);
     }
 }

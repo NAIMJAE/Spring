@@ -17,9 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -57,25 +55,19 @@ public class ArticleService {
         }
     }
 
-    // 게시물 조회 (/article/view)
+    // 게시물 조회 (/article/view) && 조회수 +1
     public ArticleDTO selectArticle(int no){
-        Optional<Article> result = articleRepository.findById(no);
+        Optional<Article> optArticle = articleRepository.findById(no);
 
         ArticleDTO articleDTO = null;
+        if(optArticle.isPresent()){
+            Article article = optArticle.get();
+            article.setHit(article.getHit()+1);
 
-        if(result.isPresent()){
-            Article article = result.get();
-            articleDTO = modelMapper.map(article, ArticleDTO.class);
+            Article resultArticle = articleRepository.save(article);
+            articleDTO = modelMapper.map(resultArticle, ArticleDTO.class);
         }
         return articleDTO;
-    }
-
-    public void updateArticle(ArticleDTO articleDTO){
-
-    }
-
-    public void deleteArticle(int no){
-
     }
 
     // 게시판별 게시글 조회
@@ -143,7 +135,46 @@ public class ArticleService {
         }
         return articleDTOs;
     }
+    // 댓글 삭제
+    public ResponseEntity<?> deleteComment(int no){
 
+        Optional<Article> article = articleRepository.findById(no);
+
+        if (article.isPresent()){
+            articleRepository.deleteById(no);
+            Map<String, String> responseMap = new HashMap<>();
+            responseMap.put("message", "delete success");
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(responseMap);
+        }else{
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("not found comment ");
+        }
+    }
+
+    // 댓글 수정
+    public ResponseEntity<?> modifyComment(int no, String content){
+
+        Article article = articleRepository.findById(no).get();;
+
+        article.setContent(content);
+
+        if (article.getContent().equals(content)){
+            Article modifyArticle = articleRepository.save(article);
+
+            ArticleDTO articleDTO = modelMapper.map(modifyArticle, ArticleDTO.class);
+
+            return ResponseEntity
+                    .status(HttpStatus.OK)
+                    .body(articleDTO);
+        }else{
+            return ResponseEntity
+                    .status(HttpStatus.NOT_FOUND)
+                    .body("not found comment ");
+        }
+    }
 
 
 

@@ -1,6 +1,7 @@
 async function fetchData(url){
     try {
         const response = await fetch(url);
+
         if (!response.ok){
             throw new Error('response not ok');
         }
@@ -18,7 +19,31 @@ function showModal(message){
     const resultModal = new bootstrap.Modal(modal);
     resultModal.show();
 }
+function showInputValid(inputs){
+    for(const input of inputs){
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+    }
+}
 
+function showInputInvalid(inputs){
+    for(const input of inputs) {
+        input.classList.remove('is-valid');
+        input.classList.add('is-invalid');
+    }
+}
+
+function showResultValid(result, message){
+    result.classList.remove('invalid-feedback');
+    result.classList.add('valid-feedback');
+    result.innerText = message;
+}
+
+function showResultInvalid(result, message){
+    result.classList.remove('valid-feedback');
+    result.classList.add('invalid-feedback');
+    result.innerText = message;
+}
 function postcode() {
     new daum.Postcode({
         oncomplete: function(data) {

@@ -3,6 +3,7 @@ package kr.co.sboard.service;
 import jakarta.transaction.Transactional;
 import kr.co.sboard.dto.ArticleDTO;
 import kr.co.sboard.dto.FileDTO;
+import kr.co.sboard.entity.Article;
 import kr.co.sboard.repository.ArticleRepository;
 import kr.co.sboard.repository.FileRepository;
 import lombok.RequiredArgsConstructor;
@@ -24,9 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -102,5 +101,39 @@ public class FileService {
             log.error("fileDownload : " + e.getMessage());
             return new ResponseEntity<>(null, null, HttpStatus.NOT_FOUND);
         }
+    }
+    public ResponseEntity<?> fileDownloadCount(int fno)  {
+        log.info("fileDownloadCount");
+        // 파일 조회
+        kr.co.sboard.entity.File file = fileRepository.findById(fno).get();
+
+        // 파일 다운로드 버튼을 누르면 먼저 보내진 요청으로 인해 다운로드 카운트 +1
+        // 새로 업데이트된 다운로드 카운트 조회해서 보내기
+        
+        // 다운로드 카운트 Json 생성
+        Map<String, Object> resultMap = new HashMap<>();
+        resultMap.put("count", file.getDownload());
+
+        return ResponseEntity.ok().body(resultMap);
+    }
+    
+    // 파일 삭제
+    public void fileDelete(int fno){
+        // 삭제 전 조회
+        Optional<kr.co.sboard.entity.File> Optfile = fileRepository.findById(fno);
+        if(Optfile.isPresent()){
+            int ano = Optfile.get().getAno();
+            // 디비 삭제 & file 카운트 -1
+            fileRepository.deleteById(fno);
+            Optional<Article> optArticle = articleRepository.findById(ano);
+            if (optArticle.isPresent()){
+                Article article = optArticle.get();
+                article.setFile(article.getFile() -1);
+                articleRepository.save(article);
+            }
+        }
+        // uploads의 파일 삭제
+
+
     }
 }
