@@ -1,5 +1,6 @@
 package kr.co.sboard.service;
 
+import jakarta.transaction.Transactional;
 import kr.co.sboard.dto.ArticleDTO;
 import kr.co.sboard.dto.FileDTO;
 import kr.co.sboard.dto.PageRequestDTO;
@@ -99,31 +100,49 @@ public class ArticleService {
 
     // 게시글 수정
     public void updateArticle(ArticleDTO articleDTO){
+        log.info("게시글 수정 service1 시작");
+
         // 파일 업로드
+        log.info("게시글 수정 service2 파일 업로드");
         List<FileDTO> files = fileService.fileUpload(articleDTO);
-        Optional<Article> optArticle = articleRepository.findById(articleDTO.getNo());
-        // 파일 첨부 갯수 초기화
-        int oldfile = optArticle.get().getFile();
-        int newfile = files.size();
-        log.info("oldfile : " + oldfile);
-        log.info("newfile : " + newfile);
-        articleDTO.setFile(oldfile + newfile);
 
         // Entity로 변환
         Article article = modelMapper.map(articleDTO, Article.class);
+
         // 게시물 내용 저장 (article) 후 entity 객체 반환
         // (JPA save() 메서드는 default로 저장한 Entity를 반환)
         Article savedArticle = articleRepository.save(article);
-        log.info("insertArticle : " + savedArticle.toString());
+        log.info("게시글 수정 service7 수정된 내용 저장");
+        log.info("게시글 수정 service8 savedArticle : " + savedArticle.toString());
 
         // 파일 내용 저장 (file)
         for(FileDTO fileDTO : files){
+            log.info("게시글 수정 service9 파일 내용 저장");
             fileDTO.setAno(savedArticle.getNo());
 
             // 여기서 에러나는데 RootConfig 파일에 ModelMapper 설정에 이거 추가 -> .setMatchingStrategy(MatchingStrategies.STRICT)
             File file = modelMapper.map(fileDTO, File.class);
             fileRepository.save(file);
+            log.info("게시글 수정 service10 파일 내용 저장 완료");
+            log.info("게시글 수정 service11 file : " + file);
         }
+        log.info("게시글 수정 service12 끝");
+    }
+
+    // 게시글 삭제
+    @Transactional
+    public ResponseEntity<?> deleteArticle(int no){
+    // no는 게시글 번호
+        // 댓글 삭제
+        deleteComment(no);
+        // 파일 삭제 && uploads 파일 삭제
+        List<File> files = fileRepository.findByAno(no);
+        for (File file : files){
+            fileService.fileDelete(file.getFno());
+        }
+        // 게시글 삭제
+        articleRepository.deleteById(no);
+        return ResponseEntity.status(HttpStatus.OK).body("success");
     }
 
     // 첨부 파일 조회

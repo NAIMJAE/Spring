@@ -1,13 +1,16 @@
 <html xmlns:th="http://www.thymeleaf.org"
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="/layout/defaultLayout.html">
+    layout:decorate="~{/layout/defaultLayout.html}">
     <!--내용 시작-->
         <div class="container-fluid px-4" layout:fragment="content">
 
-            <script>
+            <script th:inline="javascript">
                 window.onload = function (){
+                    const form = document.formWrite;
                     const btnSubmit = document.getElementById('btnSubmit');
                     const btnClose = document.getElementsByClassName('btn-close');
+                    const fileInput = document.getElementById('formFileMultiple');
+                    const fileValue = form.file.value;
 
                     // 첨부파일 삭제
                     let deleteList = []; // 삭제할 파일 번호 저장해두는 배열
@@ -28,6 +31,13 @@
                     // 게시글 수정 하기
                     btnSubmit.onclick = function (e){
                         e.preventDefault();
+                        console.log("기존 파일 수 : " + fileValue);
+                        console.log("삭제 파일 수 : " + deleteList.length);
+                        console.log("추가 파일 수 : " + fileInput.files.length);
+                        // 파일 갯수
+                        const count = fileValue - deleteList.length + fileInput.files.length;
+                        console.log("최종 파일 수 : " + count);
+                        form.file.value = count;
 
                         // 파일 삭제
                         if(deleteList != null){
@@ -59,9 +69,10 @@
 
             <!--글쓰기-->
                     <form name="formWrite" th:action="@{/article/modify}" method="post" enctype="multipart/form-data">
-                        <input type="text" name="no" th:value="${article.no}">
-                        <input type="text" name="writer" th:value="${#authentication.principal.user.uid}">
-                        <input type="text" name="cate" th:value="${article.cate}">
+                        <input type="hidden" name="no" th:value="${article.no}">
+                        <input type="hidden" name="writer" th:value="${#authentication.principal.user.uid}">
+                        <input type="hidden" name="cate" th:value="${article.cate}">
+                        <input type="hidden" name="file" th:value="${article.file}">
                         <div class="mb-3">
                             <label for="exampleFormControlInput1" class="form-label">제목</label>
                             <input type="text" class="form-control" name="title" id="exampleFormControlInput1" th:value="${article.title}">

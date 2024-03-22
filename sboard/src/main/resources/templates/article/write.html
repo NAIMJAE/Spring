@@ -1,6 +1,6 @@
 <html xmlns:th="http://www.thymeleaf.org"
     xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
-    layout:decorate="/layout/defaultLayout.html">
+    layout:decorate="~{/layout/defaultLayout.html}">
     <!--내용 시작-->
         <div class="container-fluid px-4" layout:fragment="content">
 
@@ -30,8 +30,8 @@
 
             <!--글쓰기-->
                     <form name="formWrite" th:action="@{/article/write}" method="post" enctype="multipart/form-data">
-                        <input type="text" name="writer" th:value="${#authentication.principal.user.uid}">
-                        <input type="text" name="cate" th:value="${cate}">
+                        <input type="hidden" name="writer" th:value="${#authentication.principal.user.uid}">
+                        <input type="hidden" name="cate" th:value="${cate}">
                         <div class="mb-3">
                             <label for="exampleFormControlInput1" class="form-label">제목</label>
                             <input type="text" class="form-control" name="title" id="exampleFormControlInput1" placeholder="제목을 입력하세요.">

@@ -15,8 +15,8 @@ public class FileController {
 
     private final FileService fileService;
 
-    @GetMapping("/file/download/{fno}")
-    public ResponseEntity<?> fileDownload(@PathVariable("fno") int fno) {
+    @GetMapping("/file/fileDownload")
+    public ResponseEntity<?> fileDownload(int fno) {
         log.info("fileDownload : " + fno);
         return fileService.fileDownload(fno);
     }

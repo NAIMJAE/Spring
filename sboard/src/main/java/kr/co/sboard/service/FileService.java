@@ -40,27 +40,40 @@ public class FileService {
 
     // 첨부 파일 업로드
     public List<FileDTO> fileUpload(ArticleDTO articleDTO){
-        log.info("fileUpload");
+        log.info("파일 업로드 service1 시작");
+
+        // uploads 폴더 자동 생성
+        File file = new File(fileUploadPath);
+        if(!file.exists()){
+            file.mkdir();
+        }
+
         // 파일 업로드 시스템 경로 구하기
-        String path = new File(fileUploadPath).getAbsolutePath();
+        String path = file.getAbsolutePath();
+        log.info("파일 업로드 service2 파일 저장 시작");
+
         // 저장
         List<FileDTO> files = new ArrayList<>();
 
         for(MultipartFile mf : articleDTO.getFiles()){
-            log.info("fileUpload - for문");
+            log.info("파일 업로드 service3 파일 저장 for문 시작");
             // 첨부파일이 없으면 에러발생 / null 체크
+
+
+
+
             if (!mf.isEmpty()){
-                log.info("fileUpload - if문");
+                log.info("파일 업로드 service4 파일이 null이 아닐때");
+
                 // oName, sName 구하기
                 String oName = mf.getOriginalFilename();
                 String ext = oName.substring(oName.lastIndexOf("."));
                 String sName = UUID.randomUUID().toString() + ext;
-                
-                log.info("oName : " + oName);
-                log.info("sName : " + sName);
-                
+
+                log.info("파일 업로드 service5 oName : " + oName);
+                log.info("파일 업로드 service6 sName : " + sName);
+
                 try {
-                    log.info("fileUpload - try");
                     // mf를 path경로에 sName로 생성
                     mf.transferTo(new File(path, sName));
                     // 파일 정보 생성
@@ -69,11 +82,14 @@ public class FileService {
                             .sName(sName)
                             .build();
                     files.add(fileDTO);
+                    log.info("파일 업로드 service7 저장 끝 fileDTO : " + fileDTO.toString());
+
                 } catch (IOException e) {
                     log.error(e.getMessage());
                 }
             }
         }
+        log.info("파일 업로드 service8 끝");
         return files;
     }
     @Transactional
@@ -121,31 +137,34 @@ public class FileService {
     // 파일 삭제
     @Transactional
     public void fileDelete(int fno){
+        log.info("파일 삭제 service1 시작");
         // 삭제 전 조회
         Optional<kr.co.sboard.entity.File> Optfile = fileRepository.findById(fno);
-        log.info("Optfile : " + Optfile);
+
+        log.info("파일 삭제 service2 Optfile : " + Optfile);
+
         if(Optfile.isPresent()){
+            log.info("파일 삭제 service3 Optfile이 null이 아닐때");
+
             int ano = Optfile.get().getAno();
-            log.info("ano : " + ano);
+            log.info("파일 삭제 service4 ano : " + ano);
+
             String fileName = Optfile.get().getSName();
-            // 디비 삭제 & file 카운트 -1
+            log.info("파일 삭제 service5 fileName : " + fileName);
+
+            // 디비 삭제
             fileRepository.deleteById(fno);
-            Optional<Article> optArticle = articleRepository.findById(ano);
-            log.info("optArticle : " + optArticle);
-            if (optArticle.isPresent()){
-                Article article = optArticle.get();
-                log.info("file1 : " + article.getFile());
-                article.setFile(article.getFile() -1);
-                log.info("file2 : " + article.getFile());
-                articleRepository.save(article);
-            }
+
             // uploads의 파일 삭제
+            log.info("파일 삭제 service11 uploads 파일 삭제");
             File deleteFile = new File(fileUploadPath, fileName);
+
             if (deleteFile.delete()){
-                log.info("성공");
+                log.info("파일 삭제 service11 파일 삭제 성공");
             }else{
-                log.info("실패");
+                log.info("파일 삭제 service11 파일 삭제 실패");
             }
         }
+        log.info("파일 삭제 service12 끝");
     }
 }

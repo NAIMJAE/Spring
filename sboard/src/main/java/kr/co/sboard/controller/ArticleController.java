@@ -1,6 +1,7 @@
 package kr.co.sboard.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
+import kr.co.sboard.config.AppInfo;
 import kr.co.sboard.dto.ArticleDTO;
 import kr.co.sboard.dto.FileDTO;
 import kr.co.sboard.dto.PageRequestDTO;
@@ -89,7 +90,8 @@ public class ArticleController {
     // 게시글 수정
     @PostMapping("/article/modify")
     public String modify(HttpServletRequest req, ArticleDTO articleDTO){
-        log.info("/article/modify - POST");
+        log.info("게시글 수정 controller1 시작");
+        log.info("게시글 수정 controller2 articleDTO : " + articleDTO.toString());
 
         String cate = articleDTO.getCate();
         String regip = req.getRemoteAddr();
@@ -97,11 +99,19 @@ public class ArticleController {
         articleDTO.setRegip(regip);
         articleDTO.setRdate(rdate);
 
-        log.info(articleDTO.toString());
+        log.info("게시글 수정 controller3 articleDTO : " + articleDTO.toString());
 
         articleService.updateArticle(articleDTO);
 
+        log.info("게시글 수정 controller4 끝");
         return "redirect:/article/list";
+    }
+
+    // 게시글 삭제
+    @GetMapping("/article/delete")
+    public ResponseEntity<?> delete(int no){
+        log.info("/article/delete - GET"); // 주소는 맞음 안에 삭제 순서가 잘못된듯
+        return articleService.deleteArticle(no);
     }
 
     // 댓글 작성

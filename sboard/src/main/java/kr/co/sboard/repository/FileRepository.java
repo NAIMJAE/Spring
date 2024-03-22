@@ -12,4 +12,5 @@ import java.util.List;
 @Repository
 public interface FileRepository extends JpaRepository<File, Integer> {
     public  List<File> findByAno(int ano);
+    public  int deleteByAno(int ano);
 }
