@@ -6,29 +6,38 @@
 
             <script>
                 window.onload = function (){
-                    // 파일 다운로드
+                /*
+                    //// 검색 ////
+                    const btnNavbarSearch = document.getElementById('btnNavbarSearch');
+                    const searchCate = document.getElementsByName('cate')[0];
+                    const searchText = document.getElementsByName('searchText')[0];
+
+                    btnNavbarSearch.onclick = function (){
+                        alert('22');
+                        const cate = searchCate.value;
+                        const title = searchText.value;
+
+                        const url = `/sboard/article/list?cate=${cate}&title=${title}`;
+                        window.location.href = url;
+                    }
+*/
+                //// 파일 다운로드 ////
                     const fileLinks = document.getElementsByClassName('fileLink');
 
                     for(const fileLink of fileLinks){
-
                         // 파일 다운로드 요청과 동시에 다운로드 카운트 요청
                         fileLink.onclick = function () {
-
                             const count = this.nextElementSibling.innerText;
                             this.nextElementSibling.innerText = parseInt(count) + 1;
                         }
                     }
 
-
+                //// 댓글 작성 ////
                     const CommentForm = document.CommentForm;
                     const ul = document.getElementById('commentUl');
                     const btnCommentSubmit = document.getElementById('btnCommentSubmit');
                     const btnCommentCancel = document.getElementById('btnCommentCancel');
-                   // const btnCommentDelete = document.querySelectorAll('.btnCommentDelete');
-                    //const btnCommentDeleteArray = document.querySelectorAll('.btnCommentDelete');
-                   // const btnCommentModify = document.querySelectorAll('.btnCommentModify');
 
-                    // 댓글 작성
                     btnCommentSubmit.onclick = function (){
                         const parent = CommentForm.parent.value;
                         const writer = CommentForm.writer.value;
@@ -40,59 +49,65 @@
                             "content" : content
                         }
                         if (content != null){
-                            // 입력
                             fetch("/sboard/article/comment",{
                                 method: "POST",
                                 headers: {"content-Type": "application/json"},
                                 body: JSON.stringify(jsonData)
                             })
-                                .then(response => response.json())
-                                .then(data => {
-                                    console.log(data);
-                                    // 날짜 자르기
-                                    const date = data.rdate.substring(0, 10);
-                                    // 방금 작성한 댓글 동적으로 태그 생성
-                                    const il =
-                                        `<li class="list-group-item d-flex justify-content-between align-items-start">
-                                            <div class="ms-2 me-auto col-sm-10">
-                                                <div class="fw-bold nameDate">${data.writer} | ${date}</div>
-                                                <textarea class="col-sm-12 border-0" name="content" style="outline: none; resize: none;" readonly>${data.content}</textarea>
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(data);
+                                const frontDate = data.rdate.substring(0, 10); // 날짜 자르기
+                                const backDate = data.rdate.substring(11, 16); // 날짜 자르기
+                                // 작성한 댓글 동적으로 태그 생성
+                                const il =
+                                    `<li class="list-group-item d-flex justify-content-between align-items-start">
+                                        <div class="ms-2 me-auto col-sm-10">
+                                            <div class="fw-bold nameDate">
+                                                <span class="text-dark commentNick">${data.writer}&nbsp;</span>
+                                                <span class="text-secondary small commentDate">${frontDate} ${backDate}</span>
                                             </div>
-                                            <button type="button" class="me-2 mt-2 btn btn-sm btn-outline-secondary btnCommentDelete" data-no="${data.no}">삭제</button>
-                                            <button type="button" class="mt-2 btn btn-sm btn-outline-secondary btnCommentModify" data-no="${data.no}">수정</button>
-                                        </li>`
-                                    ul.insertAdjacentHTML('beforeend', il);
+                                            <textarea class="col-sm-12 mt-1 border-0" name="content" style="outline: none; resize: none;" readonly>${data.content}</textarea>
+                                        </div>
+                                        <button type="button" class="me-2 mt-2 btn btn-sm btn-outline-secondary btnCommentDelete" data-no="${data.no}">삭제</button>
+                                        <button type="button" class="mt-2 btn btn-sm btn-outline-secondary btnCommentModify" data-no="${data.no}">수정</button>
+                                    </li>`
+                                ul.insertAdjacentHTML('beforeend', il);
 
-                                    CommentForm.content.value = "";
-                                    alert("댓글을 작성했습니다.")
-                                })
-                                .catch(err => {
-                                    console.log(err);
-                                })
+                                CommentForm.content.value = "";
+                                alert("댓글을 작성했습니다.");
+                            })
+                            .catch(err => {
+                                console.log(err);
+                            })
                         } else {
-                            alert("댓글 내용을 입력해주세요.")
+                            alert("댓글 내용을 입력해주세요.");
                         }
                     }
-                    // 댓글 취소
+
+                //// 댓글 취소 ////
                     btnCommentCancel.onclick = function () {
                         CommentForm.content.value = "";
                     }
 
-            ////////////////////////댓글 수정 / 삭제 / 취소 / 저장//////////////////////////
-                    let oValue = null;
-                    let editing = false;
+                //// 댓글 수정 / 삭제 / 취소 / 저장 ////
+                    let oValue = null;      // 댓글 수정 모드 진입시 원래 댓글 임시 저장
+                    let editing = false;    // 댓글 수정 모드일 경우 다른 댓글 수정 금지
                     const commentUl = document.getElementById('commentUl');
 
+                    // 댓글 편집 버튼 클릭 시 이벤트 발생
                     document.addEventListener('click', async function (e){
-                        const btnValue = e.target.className;
+                        const btnValue = e.target.className;    // 클릭한 버튼의 클래스 네임
+                        console.log(btnValue);
 
-
-                        // 삭제
-                        if (btnValue.includes('commentDelete') && editing === false){
+                        // 댓글 삭제
+                        if (btnValue.includes('btnCommentDelete') && editing === false){
                             e.preventDefault();
-                            const no = e.target.dataset.no;
-                            const li = e.target.parentElement;
+
+                            const no = e.target.dataset.no;     // 댓글 글 번호
+                            const li = e.target.parentElement;  // 댓글 최상위 li 태그
                             const result = confirm("정말 삭제하시겠습니까?");
+
                             if(result){
                                 await fetch(`/sboard/article/commentDelete/${no}`)
                                     .then(response => {
@@ -104,8 +119,10 @@
                                         li.remove();
                                     }).catch(err => console.log(err));
                             }
-                        }else if(btnValue.includes('commentCancel')){
+                        // 댓글 수정 취소
+                        }else if(btnValue.includes('btnCommentCancel')){
                             e.preventDefault();
+
                             const textarea = e.target.parentElement.querySelector('textarea');
                             const btnLeft = e.target;
                             const btnRight = e.target.nextElementSibling;
@@ -113,32 +130,43 @@
                             textarea.value = oValue;
                             textarea.readOnly = true;
                             textarea.style.outline = "none"
+
                             btnLeft.innerText = "삭제"
                             btnRight.innerText = "수정"
+                            btnLeft.classList.add('btnCommentDelete');
+                            btnRight.classList.add('btnCommentModify');
+                            btnLeft.classList.remove('btnCommentCancel');
+                            btnRight.classList.remove('btnCommentSave');
                             editing = false;
-
-                        }else if(btnValue.includes('commentModify') && editing === false){
+                        // 댓글 수정
+                        }else if(btnValue.includes('btnCommentModify') && editing === false){
                             e.preventDefault();
+
                             editing = true;
                             const textarea = e.target.parentElement.querySelector('textarea');
                             const btnRight = e.target;
                             const btnLeft = e.target.previousElementSibling;
-                            // 수정 전 내용 저장
-                            oValue = textarea.value;
 
+                            oValue = textarea.value;    // 수정 전 내용 저장
                             textarea.readOnly = false;
                             textarea.style.outline = "1px solid #111"
                             textarea.focus();
                             textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-                            // 버튼 수정
+
                             btnLeft.innerText = "취소"
                             btnRight.innerText = "저장"
-
-                        }else if(btnValue.includes('commentSave')){
+                            btnLeft.classList.add('btnCommentCancel');
+                            btnRight.classList.add('btnCommentSave');
+                            btnLeft.classList.remove('btnCommentDelete');
+                            btnRight.classList.remove('btnCommentModify');
+                        // 수정된 댓글 저장
+                        }else if(btnValue.includes('btnCommentSave')){
                             e.preventDefault();
+
                             const no = e.target.dataset.no;
                             const textarea = e.target.parentElement.querySelector('textarea');
-                            const div = e.target.parentElement.querySelector('.nameDate');
+                            const commentNick = e.target.parentElement.querySelector('.commentNick');
+                            const commentDate = e.target.parentElement.querySelector('.commentDate');
                             const content = textarea.value;
                             const btnRight = e.target;
                             const btnLeft = e.target.previousElementSibling;
@@ -149,23 +177,30 @@
                                     return response.json();
                                 })
                                 .then(data => {
+                                    const frontDate = data.rdate.substring(0, 10); // 날짜 자르기
+                                    const backDate = data.rdate.substring(11, 16); // 날짜 자르기
+
                                     textarea.innerText = `${data.content}`;
-                                    div.innerText = `${data.writer} | ${data.rdate.substring(0,10)}`;
+                                    commentNick.innerText = `${data.writer}`;
+                                    commentDate.innerText = `${frontDate} ${backDate}`;
+
                                     textarea.readOnly = true;
                                     textarea.style.outline = "none"
+
                                     btnLeft.innerText = "삭제"
                                     btnRight.innerText = "수정"
+                                    btnLeft.classList.add('btnCommentDelete');
+                                    btnRight.classList.add('btnCommentModify');
+                                    btnLeft.classList.remove('btnCommentCancel');
+                                    btnRight.classList.remove('btnCommentSave');
                                 }).catch(err => console.log(err))
                             editing = false;
                         }
                     });
 
-                    // 댓글 추가삭제수정취소와 구분 시키기 게시글버튼은 id값 / 댓글버튼은 class값
-                    // 게시글 삭제
-                    const btnDelete = document.getElementsByClassName('btnDelete');
+                //// 게시글 삭제 ////
+                    const btnDelete = document.getElementById('btnDelete');
                     const no = CommentForm.parent.value;
-                    const cateEl = document.getElementsByName('cate');
-                    const cate = cateEl.value;
 
                     btnDelete.onclick = function (e){
                         const result = confirm("게시글을 삭제하시겠습니까?")
@@ -185,67 +220,95 @@
             <ol class="breadcrumb mb-4">
                 <li class="breadcrumb-item active"></li>
             </ol>
-
-
+            <!--글보기-->
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-table me-1"></i>
                     0000 게시판 글보기
                 </div>
+
                 <div class="card-body">
 
-                <!--글보기-->
                 <!--글제목-->
-                    <input type="hidden" name="cate" th:value="${cate}">
-                    <div class="mb-3">
-                        <label for="exampleFormControlInput1" class="form-label">제목</label>
-                        <input type="text" class="form-control" name="title" id="exampleFormControlInput1"
-                               th:value="${article.title}" readonly>
-                    </div>
+                    <input type="hidden" class="cate" name="cate" th:value="${article.cate}">
+
+                    <table class="table mt-4 mb-0 border-top">
+                        <tbody>
+                        <tr class="table-light">
+                            <td><strong name="title" th:text="${article.title}"></strong></td>
+                            <td class="col-3" style="text-align: right">[[${#temporals.format(article.rdate, 'yyyy-MM-dd HH:mm')}]]</td>
+                        </tr>
+                        <tr>
+                            <td>작성자 : [[${articleNick}]]</td>
+                            <td class="col-3" style="text-align: right">조회수 : [[${article.hit}]]</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
                 <!--첨부파일-->
-                    <ul class="list-group" th:if="${article.file > 0}">
-                        <label class="form-label">첨부파일</label>
-                        <li class="list-group-item d-flex justify-content-between align-items-center" th:each="file : ${article.fileList}">
-                            <a th:href="@{/file/fileDownload(fno=${file.fno})}" class="fileLink" th:data-fno="${file.fno}" th:text="${file.oName}"></a>
-                            <span class="badge text-bg-primary rounded-pill" th:text="${file.download}"></span>
-                        </li>
-                    </ul>
+                    <table class="table mt-0">
+                        <tbody>
+                            <tr class="table-light">
+                                <td class="col-1">첨부파일</td>
+                                <td>
+                                    <th:block  th:if="${article.file > 0}" th:each="file : ${article.fileList}">
+                                    <a th:href="@{/file/fileDownload(fno=${file.fno})}" class="fileLink" th:data-fno="${file.fno}" th:text="${file.oName}"></a>
+                                    <span class="badge text-bg-secondary rounded-pill" th:text="${file.download}"></span>
+                                    </th:block>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
                 <!--글내용-->
-                    <div class="mb-3">
-                        <label for="exampleFormControlTextarea1" class="form-label"><br>내용</label>
-                        <textarea class="form-control" name="content" id="exampleFormControlTextarea1" rows="10"
-                                  th:text="${article.content}" readonly></textarea>
-                    </div>
+                    <table class="table mt-4">
+                        <tbody>
+                        <tr>
+                            <td colspan="2">
+                                <div class="mb-3">
+                                <textarea class="form-control border-0" name="content" style="outline-style: none;" rows="10" th:text="${article.content}" readonly></textarea>
+                                </div>
+                            </td>
+                        </tr>
                 <!--목록 / 수정 버튼-->
-                    <div class="text-end">
-                        <a th:href="@{/article/list}" class="btn btn-secondary btn-sm">목록</a>
-                        <th:block th:if="${article.writer} == ${#authentication.principal.user.uid}">
-                            <a th:href="@{/article/modify(no=${article.no})}" class="btn btn-primary btn-sm" id="btnSubmit">수정</a>
-                            <a th:href="@{/article/delete(no=${article.no})}" class="btn btn-danger btn-sm" id="btnDelete">삭제</a>
-                        </th:block>
-                    </div>
+                        <tr>
+                            <td colspan="2">
+                                <div class="text-end">
+                                    <a th:href="@{/article/list(cate=${article.cate})}" class="btn btn-secondary btn-sm">목록</a>
+                                    <th:block th:if="${article.writer} == ${#authentication.principal.user.uid}">
+                                        <a th:href="@{/article/modify(no=${article.no})}" class="btn btn-success btn-sm" id="btnSubmit">수정</a>
+                                        <a th:href="@{/article/delete(no=${article.no}, cate=${article.cate})}" class="btn btn-danger btn-sm" id="btnDelete">삭제</a>
+                                    </th:block>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
 
                 <!--댓글 작성-->
                     <form name="CommentForm">
-                        <div class="mb-3">
+                        <div class="mb-3 mt-5">
                             <input type="hidden" name="parent" th:value="${article.no}">
                             <input type="hidden" name="writer" th:value="${#authentication.principal.user.uid}">
-                            <label for="exampleFormControlTextarea2" class="form-label"><br>댓글 작성</label>
-                            <textarea class="form-control" name="content" id="exampleFormControlTextarea2" rows="3"></textarea>
+                            <p class="border-top border-bottom p-2 bg-light"><strong>댓글 작성</strong></p>
+                            <textarea class="form-control" name="content" rows="3"></textarea>
                         </div>
-                        <div class="text-end">
+                        <div class="text-end border-bottom pb-2">
                             <button type="button" class="btn btn-secondary btn-sm" id="btnCommentCancel">취소</button>
-                            <button type="button" class="btn btn-primary btn-sm" id="btnCommentSubmit">작성</button>
+                            <button type="button" class="btn btn-success btn-sm" id="btnCommentSubmit">작성</button>
                         </div>
                     </form>
 
                 <!--댓글 목록-->
-                    <label for="commentUl" class="form-label"><br>댓글 목록</label>
+                    <p class="border-top border-bottom p-2 mt-5 bg-light"><strong>댓글 목록</strong></p>
                     <ul class="list-group list-group" id="commentUl">
-                        <li class="list-group-item d-flex justify-content-between align-items-start" th:each="comment : ${comments}">
+                        <li class="list-group-item d-flex justify-content-between align-items-start" th:each="comment, index : ${comments}">
                             <div class="ms-2 me-auto col-sm-10">
-                                <div class="fw-bold nameDate">[[${comment.writer}]] | [[${#strings.substring(comment.rdate, 0, 10)}]]</div>
-                                <textarea class="col-sm-12 border-0" name="content" style="outline: none; resize: none;" readonly>[[${comment.content}]]</textarea>
+                                <div class="fw-bold nameDate">
+                                    <span class="text-dark commentNick">[[${commentNickList[index.index]}]]&nbsp;&nbsp;</span>
+                                    <span class="text-secondary small commentDate">[[${#temporals.format(comment.rdate, 'yyyy-MM-dd HH:mm')}]]</span>
+                                </div>
+                                <textarea class="col-sm-12 mt-1 border-0" name="content" style="outline: none; resize: none;" readonly>[[${comment.content}]]</textarea>
                             </div>
                             <th:block th:if="${comment.writer} == ${#authentication.principal.user.uid}">
                             <button type="button" class="me-2 mt-2 btn btn-sm btn-outline-secondary btnCommentDelete" th:data-no="${comment.no}">삭제</button>

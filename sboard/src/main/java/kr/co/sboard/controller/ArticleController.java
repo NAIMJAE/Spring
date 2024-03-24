@@ -9,6 +9,7 @@ import kr.co.sboard.dto.PageResponseDTO;
 import kr.co.sboard.entity.Article;
 import kr.co.sboard.service.ArticleService;
 import kr.co.sboard.service.FileService;
+import kr.co.sboard.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -19,6 +20,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -27,6 +29,7 @@ import java.util.List;
 public class ArticleController {
 
     private final ArticleService articleService;
+    private final UserService userService;
 
     // 게시물 조회 (10개씩)
     @GetMapping("/article/list")
@@ -36,7 +39,7 @@ public class ArticleController {
         // 게시판 종류별 게시물 10개씩 조회
         PageResponseDTO pageResponseDTO = articleService.selectArticleForCate(pageRequestDTO);
         model.addAttribute("pageResponseDTO", pageResponseDTO);
-
+        log.info("nicklist : " + pageResponseDTO.getNickList().toString());
         return "/article/list";
     }
     
@@ -47,17 +50,30 @@ public class ArticleController {
         return "/article/write";
     }
 
+    // 게시글 검색 (10개씩)
+    
     // 게시글 출력 1개 (/article/view)
     @GetMapping("/article/view")
     public String view(String cate, int no, Model model){
         log.info("/article/view - GET");
         // 게시글 내용 조회
         ArticleDTO article = articleService.selectArticle(no);
+        // 게시글 닉네임 조회 (지워도 코드 문제 없음)
+        String articleNick = userService.selectUserForNick(article.getWriter());
 
         // 댓글 조회
         List<ArticleDTO> comments = articleService.selectComment(no);
+        // 댓글 닉네임 조회 (지워도 코드 문제 없음)
+        List<String> commentNickList = new ArrayList<>();
+        for (ArticleDTO comment : comments){
+            String commentNick = userService.selectUserForNick(comment.getWriter());
+            commentNickList.add(commentNick);
+        }
+
         model.addAttribute("article", article);
         model.addAttribute("comments", comments);
+        model.addAttribute("articleNick", articleNick);
+        model.addAttribute("commentNickList", commentNickList);
         return "/article/view";
     }
 
@@ -65,7 +81,7 @@ public class ArticleController {
     @PostMapping("/article/write")
     public String write(HttpServletRequest req, ArticleDTO articleDTO){
         log.info("/article/write - POST");
-
+        String cate = articleDTO.getCate();
         String regip = req.getRemoteAddr();
         LocalDateTime rdate = LocalDateTime.now();
         articleDTO.setRegip(regip);
@@ -75,7 +91,7 @@ public class ArticleController {
 
         articleService.insertArticle(articleDTO);
 
-        return "redirect:/article/list";
+        return "redirect:/article/list?cate=" + cate;
     }
     
     // 게시글 수정 페이지 매핑
@@ -109,12 +125,14 @@ public class ArticleController {
 
     // 게시글 삭제
     @GetMapping("/article/delete")
-    public ResponseEntity<?> delete(int no){
-        log.info("/article/delete - GET"); // 주소는 맞음 안에 삭제 순서가 잘못된듯
-        return articleService.deleteArticle(no);
+    public String delete(int no, String cate){
+        log.info("/article/delete - GET");
+        articleService.deleteArticle(no);
+
+        return "redirect:/article/list?cate=" + cate;
     }
 
-    // 댓글 작성
+    // 댓글 작성 ////nick
     @PostMapping("/article/comment")
     public ResponseEntity<?> comment(HttpServletRequest req,@RequestBody ArticleDTO articleDTO){
         log.info("/article/comment - POST");
@@ -135,7 +153,7 @@ public class ArticleController {
         return articleService.deleteComment(no);
     }
 
-    // 댓글 수정
+    // 댓글 수정 //// nick
     @ResponseBody
     @GetMapping("/article/commentModify/{no}/{content}")
     public ResponseEntity<?> commentDelete(@PathVariable("no") int no, @PathVariable("content") String content){

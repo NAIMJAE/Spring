@@ -7,8 +7,10 @@ import kr.co.sboard.dto.PageRequestDTO;
 import kr.co.sboard.dto.PageResponseDTO;
 import kr.co.sboard.entity.Article;
 import kr.co.sboard.entity.File;
+import kr.co.sboard.entity.User;
 import kr.co.sboard.repository.ArticleRepository;
 import kr.co.sboard.repository.FileRepository;
+import kr.co.sboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
@@ -26,6 +28,7 @@ import java.util.*;
 public class ArticleService {
 
     private final ArticleRepository articleRepository;
+    private final UserRepository userRepository;
     private final FileService fileService;
     private final FileRepository fileRepository;
     // 별도의 빈 등록 필요
@@ -77,18 +80,46 @@ public class ArticleService {
         Pageable pageable = pageRequestDTO.getPageable("no");
 
         // Repository 메서드에 Pageable 객체 전달하여 페이징 처리된 결과 가져오기
-        Page<Article> pageArticle = articleRepository.findByCateAndParent(pageRequestDTO.getCate(), 0, pageable);
+        Page<Article> pageArticle = null;
+        if(pageRequestDTO.getCondition() != null){
 
+            if (pageRequestDTO.getCondition().equals("title")){
+                pageArticle = articleRepository
+                        .findByCateAndParentAndTitleContaining(pageRequestDTO.getCate(), 0, pageRequestDTO.getSearchText(), pageable);
+            }else if (pageRequestDTO.getCondition().equals("content")){
+                pageArticle = articleRepository
+                        .findByCateAndParentAndContentContaining(pageRequestDTO.getCate(), 0, pageRequestDTO.getSearchText(), pageable);
+            }else if (pageRequestDTO.getCondition().equals("nick")){
+                User user = userRepository.findByNick(pageRequestDTO.getCondition());
+
+                pageArticle = articleRepository
+                        .findByCateAndParentAndWriterContaining(pageRequestDTO.getCate(), 0, user.getUid(), pageable);
+            }
+
+        }else {
+            pageArticle = articleRepository
+                    .findByCateAndParent(pageRequestDTO.getCate(), 0, pageable);
+        }
 
         List<ArticleDTO> dtoList = pageArticle.getContent().stream()
                                     .map(entity -> modelMapper.map(entity, ArticleDTO.class))
                                     .toList();
+        log.info("dtoList : " + dtoList.toString());
+        // 닉네임 추출
+        List<String> nickList = new ArrayList<>();
+        for (ArticleDTO list : dtoList){
+            Optional<User> optUser = userRepository.findById(list.getWriter());
+            String nick = optUser.get().getNick();
+            log.info("nick : " + nick);
+            nickList.add(nick);
+        }
 
         int total = (int) pageArticle.getTotalElements();
 
         return PageResponseDTO.builder()
                 .pageRequestDTO(pageRequestDTO)
                 .dtoList(dtoList)
+                .nickList(nickList)
                 .total(total)
                 .build();
     }
@@ -134,7 +165,7 @@ public class ArticleService {
     public ResponseEntity<?> deleteArticle(int no){
     // no는 게시글 번호
         // 댓글 삭제
-        deleteComment(no);
+        articleRepository.deleteByParent(no);
         // 파일 삭제 && uploads 파일 삭제
         List<File> files = fileRepository.findByAno(no);
         for (File file : files){

@@ -17,4 +17,8 @@
     <select id="checkUser" resultType="int">
         select count(*) from user where ${type} = #{value};
     </select>
+    <!--닉네임 조회-->
+    <select id="selectUserForNick" resultType="String">
+        select `nick` from user where uid = #{uid};
+    </select>
 </mapper>

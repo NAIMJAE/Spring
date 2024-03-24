@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Mapper;
 public interface UserMapper {
     public TermsDTO selectTerms();
     public void insertUser(UserDTO userDTO);
-    public void selectUsers();
+    public String selectUserForNick(String uid);
     public void updateUser();
     public void deleteUser();
     public int selectCheckUid(String uid);

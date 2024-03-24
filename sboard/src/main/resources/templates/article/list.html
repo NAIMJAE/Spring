@@ -3,12 +3,34 @@
     layout:decorate="~{/layout/defaultLayout.html}">
     <!--내용 시작-->
         <div class="container-fluid px-4" layout:fragment="content">
+            <script>
+                window.onload = function (){
+                    // 현재 시간 가져오기
+                    let currentDate = new Date();
+                    // 모든 tdTitle 요소에 대해 반복
+                    let tdTitles = document.getElementsByClassName('tdTitle');
+                    for (let i = 0 ; i < tdTitles.length ; i++) {
+                        const tdRdate = tdTitles[i].parentElement.querySelector('.tdRdate').getAttribute('name');
+
+                        // tdRdate를 JavaScript의 Date 객체로 변환
+                        let articleDate = new Date(tdRdate);
+
+                        // 두 날짜의 차이를 계산하여 일(day) 단위로 변환
+                        let differenceInMilliseconds = currentDate - articleDate;
+                        let differenceInDays = differenceInMilliseconds / (1000 * 60 * 60 * 24);
+
+                        // 차이가 24시간 이내인 경우 'NEW'를 추가
+                        if (differenceInDays < 1) {
+                            const span = `<span class="badge rounded-pill text-bg-warning" name="badge">NEW</span>`;
+                            tdTitles[i].insertAdjacentHTML('beforeend', span);
+                        }
+                    }
+                }
+            </script>
             <h1 class="mt-4">게시판 목록</h1>
             <ol class="breadcrumb mb-4">
                 <li class="breadcrumb-item active">0000 게시판 글목록</li>
             </ol>
-
-
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-table me-1"></i>
@@ -28,13 +50,14 @@
 
                         <tbody>
                             <tr th:each="article, index : ${pageResponseDTO.dtoList}">
-                                <td th:text="${pageResponseDTO.startNo - index.index}"></td>
-                                <td>
-                                    <a th:href="@{/article/view(cate=${article.cate}, no=${article.no})}" th:text="${article.title}"></a>
+                                <td class="col-1" th:text="${pageResponseDTO.startNo - index.index}"></td>
+                                <td class="tdTitle">
+                                    <a class="text-dark text-decoration-none"  style="font-weight: bold" th:href="@{/article/view(cate=${article.cate}, no=${article.no})}">[[${article.title}]]</a>
                                 </td>
-                                <td th:text="${article.writer}"></td>
-                                <td th:text="${article.hit}"></td>
-                                <td th:text="${#strings.substring(article.rdate, 0, 10)}"></td>
+                                <td class="col-2" th:text="${pageResponseDTO.nickList[index.index]}"></td>
+                                <td class="col-1" th:text="${article.hit}"></td>
+                                <td class="tdRdate col-2" th:name="${article.rdate}" th:text="${#temporals.format(article.rdate, 'yyyy-MM-dd HH:mm')}"></td>
+                                <!--${#strings.substring(#temporals.format(article.rdate, 'yyyy-MM-dd HH:mm'), 2, 16)} -->
                             </tr>
                         </tbody>
                     </table>
@@ -64,7 +87,7 @@
                 </div>
             </div>
             <div class="text-end">
-                <a th:href="@{/article/write(cate=${pageResponseDTO.cate})}" class="btn btn-primary">글쓰기</a>
+                <a th:href="@{/article/write(cate=${pageResponseDTO.cate})}" class="btn btn-secondary">글작성</a>
             </div>
         </div>
     <!--내용 끝-->

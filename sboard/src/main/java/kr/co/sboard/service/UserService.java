@@ -40,8 +40,10 @@ public class UserService {
         userDTO.setPass(encoded);
         userMapper.insertUser(userDTO);
     }
-    
-    public void selectUsers(){}
+
+    public String selectUserForNick(String uid){
+        return userMapper.selectUserForNick(uid);
+    }
 
     public void updateUser(){}
 

@@ -11,6 +11,7 @@ import java.util.List;
 @ToString
 public class PageResponseDTO {
     private List<ArticleDTO> dtoList;
+    private List<String> nickList;
     private String cate;
     private int pg;
     private int size;
@@ -20,12 +21,13 @@ public class PageResponseDTO {
     private boolean prev, next;
 
     @Builder
-    public PageResponseDTO(PageRequestDTO pageRequestDTO, List<ArticleDTO> dtoList, int total){
+    public PageResponseDTO(PageRequestDTO pageRequestDTO, List<ArticleDTO> dtoList, List<String> nickList, int total){
         this.cate = pageRequestDTO.getCate();
         this.pg = pageRequestDTO.getPg();
         this.size = pageRequestDTO.getSize();
         this.total = total;
         this.dtoList = dtoList;
+        this.nickList = nickList;
 
         this.startNo = total - ((pg - 1) * size);
         this.end = (int) (Math.ceil(this.pg/10.0))*10;

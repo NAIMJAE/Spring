@@ -19,6 +19,8 @@ public class PageRequestDTO {
     @Builder.Default
     private int size = 10;
 
+    private String condition;
+    private String searchText;
     private String cate;
 
     public Pageable getPageable(String sort){
