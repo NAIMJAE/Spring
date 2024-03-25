@@ -13,6 +13,7 @@ import kr.co.sboard.repository.FileRepository;
 import kr.co.sboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.Condition;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +36,7 @@ public class ArticleService {
     private final ModelMapper modelMapper;
 
     // 게시글 등록
-    public void insertArticle(ArticleDTO articleDTO){
+    public int insertArticle(ArticleDTO articleDTO){
         // 파일 업로드
         List<FileDTO> files = fileService.fileUpload(articleDTO);
 
@@ -57,6 +58,7 @@ public class ArticleService {
             File file = modelMapper.map(fileDTO, File.class);
             fileRepository.save(file);
         }
+        return savedArticle.getNo();
     }
 
     // 게시물 조회 (/article/view) && 조회수 +1
@@ -81,24 +83,31 @@ public class ArticleService {
 
         // Repository 메서드에 Pageable 객체 전달하여 페이징 처리된 결과 가져오기
         Page<Article> pageArticle = null;
-        if(pageRequestDTO.getCondition() != null){
+        if(pageRequestDTO.getCondition() != null && !pageRequestDTO.getCondition().isEmpty()){
+
+            // select * from `article` where `cate`= ${cate} and `parent`=0 and `${condition}` lick %${searchText}% limit (? , 10);
 
             if (pageRequestDTO.getCondition().equals("title")){
                 pageArticle = articleRepository
-                        .findByCateAndParentAndTitleContaining(pageRequestDTO.getCate(), 0, pageRequestDTO.getSearchText(), pageable);
+                        .findByParentAndTitleContaining(0, pageRequestDTO.getSearchText(), pageable);
             }else if (pageRequestDTO.getCondition().equals("content")){
                 pageArticle = articleRepository
-                        .findByCateAndParentAndContentContaining(pageRequestDTO.getCate(), 0, pageRequestDTO.getSearchText(), pageable);
+                        .findByParentAndContentContaining(0, pageRequestDTO.getSearchText(), pageable);
             }else if (pageRequestDTO.getCondition().equals("nick")){
-                User user = userRepository.findByNick(pageRequestDTO.getCondition());
-
-                pageArticle = articleRepository
-                        .findByCateAndParentAndWriterContaining(pageRequestDTO.getCate(), 0, user.getUid(), pageable);
+                log.info(pageRequestDTO.getSearchText());
+                User user = userRepository.findByNick(pageRequestDTO.getSearchText());
+                if (user != null) {
+                    log.info(user.toString());
+                    pageArticle = articleRepository.findByParentAndWriterContaining(0, user.getUid(), pageable);
+                } else {
+                    pageArticle = articleRepository.findByParentAndWriterContaining(0, null, pageable);
+                }
             }
 
         }else {
             pageArticle = articleRepository
                     .findByCateAndParent(pageRequestDTO.getCate(), 0, pageable);
+            log.info(pageArticle.toString());
         }
 
         List<ArticleDTO> dtoList = pageArticle.getContent().stream()
@@ -120,6 +129,8 @@ public class ArticleService {
                 .pageRequestDTO(pageRequestDTO)
                 .dtoList(dtoList)
                 .nickList(nickList)
+                .condition(pageRequestDTO.getCondition())
+                .searchText(pageRequestDTO.getSearchText())
                 .total(total)
                 .build();
     }
@@ -130,7 +141,7 @@ public class ArticleService {
     }
 
     // 게시글 수정
-    public void updateArticle(ArticleDTO articleDTO){
+    public int updateArticle(ArticleDTO articleDTO){
         log.info("게시글 수정 service1 시작");
 
         // 파일 업로드
@@ -158,6 +169,7 @@ public class ArticleService {
             log.info("게시글 수정 service11 file : " + file);
         }
         log.info("게시글 수정 service12 끝");
+        return savedArticle.getNo();
     }
 
     // 게시글 삭제
@@ -190,14 +202,19 @@ public class ArticleService {
     // 댓글 등록
     public ResponseEntity<?> insertComment(ArticleDTO articleDTO){
 
-        // Entity로 변환
+        // parent의 comment +1
+        Article parentArticle = articleRepository.findById(articleDTO.getParent()).get();
+        parentArticle.setComment(parentArticle.getComment()+1);
+        articleRepository.save(parentArticle);
+
+        // 댓글 저장
         Article article = modelMapper.map(articleDTO, Article.class);
 
         // (JPA save() 메서드는 default로 저장한 Entity를 반환)
         Article savedArticle = articleRepository.save(article);
         log.info("insertArticle : " + savedArticle.toString());
-
         ArticleDTO result = modelMapper.map(savedArticle, ArticleDTO.class);
+
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(result);
@@ -220,6 +237,11 @@ public class ArticleService {
         Optional<Article> article = articleRepository.findById(no);
 
         if (article.isPresent()){
+
+            Article parentArticle = articleRepository.findById(article.get().getParent()).get();
+            parentArticle.setComment(parentArticle.getComment()-1);
+            articleRepository.save(parentArticle);
+
             articleRepository.deleteById(no);
             Map<String, String> responseMap = new HashMap<>();
             responseMap.put("message", "delete success");

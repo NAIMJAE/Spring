@@ -13,7 +13,6 @@
     <link th:href="@{/css/styles.css}" rel="stylesheet" />
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
     <script th:src="@{/js/util.js}"></script>
-    <!--<script th:src="@{/js/view.js}"></script>-->
 </head>
 
 <body class="sb-nav-fixed">
@@ -25,8 +24,6 @@
     <!-- Navbar Search-->
     <form class="d-none d-md-inline-block form-inline ms-auto me-0 me-md-3 my-2 my-md-0" th:action="@{/article/list}" method="get">
         <div class="input-group">
-            <input class="searchCate" type="hidden" name="searchCate" value="free">
-
             <div class="d-inline-block">
                 <label for="condition"></label>
                 <select class="rounded-2 p-2 me-2" id="condition" name="condition">
@@ -37,7 +34,7 @@
             </div>
 
             <input class="form-control rounded-start searchText" type="text" name="searchText" placeholder="Search for..." aria-label="Search for..." aria-describedby="btnNavbarSearch" />
-            <button class="btn btn-primary" onclick="handleNavbarSearch()" id="btnNavbarSearch" type="button"><i class="fas fa-search"></i></button>
+            <button class="btn btn-primary" onclick="search()" id="btnNavbarSearch" type="submit"><i class="fas fa-search"></i></button>
         </div>
     </form>
 
@@ -46,7 +43,7 @@
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i></a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
-                <li><a class="dropdown-item" href="#!">Settings</a></li>
+                <li><a class="dropdown-item" th:href="@{/my/setting}">Settings</a></li>
                 <li><a class="dropdown-item" href="#!">Activity Log</a></li>
                 <li><hr class="dropdown-divider" /></li>
                 <li><a class="dropdown-item" th:href="@{/user/logout}">Logout</a></li>

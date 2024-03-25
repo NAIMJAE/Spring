@@ -22,9 +22,9 @@ public interface ArticleRepository extends JpaRepository<Article, Integer> {
         - Page 타입은 한 페이지에 포함된 엔티티 목록을 표현
     */
     public Page<Article> findByCateAndParent(String cate, int parent, Pageable pageable);
-    public Page<Article> findByCateAndParentAndTitleContaining(String cate, int parent, String searchText, Pageable pageable);
-    public Page<Article> findByCateAndParentAndContentContaining(String cate, int parent, String searchText, Pageable pageable);
-    public Page<Article> findByCateAndParentAndWriterContaining(String cate, int parent, String searchText, Pageable pageable);
+    public Page<Article> findByParentAndTitleContaining(int parent, String searchText, Pageable pageable);
+    public Page<Article> findByParentAndContentContaining(int parent, String searchText, Pageable pageable);
+    public Page<Article> findByParentAndWriterContaining(int parent, String searchText, Pageable pageable);
 
     public List<Article> findByParent(int parent);
 

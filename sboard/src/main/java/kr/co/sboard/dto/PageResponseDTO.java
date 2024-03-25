@@ -13,6 +13,8 @@ public class PageResponseDTO {
     private List<ArticleDTO> dtoList;
     private List<String> nickList;
     private String cate;
+    private String condition;
+    private String searchText;
     private int pg;
     private int size;
     private int total;
@@ -21,13 +23,15 @@ public class PageResponseDTO {
     private boolean prev, next;
 
     @Builder
-    public PageResponseDTO(PageRequestDTO pageRequestDTO, List<ArticleDTO> dtoList, List<String> nickList, int total){
+    public PageResponseDTO(PageRequestDTO pageRequestDTO, List<ArticleDTO> dtoList, List<String> nickList, String condition, String searchText, int total){
         this.cate = pageRequestDTO.getCate();
         this.pg = pageRequestDTO.getPg();
         this.size = pageRequestDTO.getSize();
         this.total = total;
         this.dtoList = dtoList;
         this.nickList = nickList;
+        this.condition = condition;
+        this.searchText = searchText;
 
         this.startNo = total - ((pg - 1) * size);
         this.end = (int) (Math.ceil(this.pg/10.0))*10;

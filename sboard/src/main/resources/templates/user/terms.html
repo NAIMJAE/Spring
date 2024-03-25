@@ -6,17 +6,17 @@
         <script>
             window.onload =function (){
                 const form = document.termsForm;
-                const agree1 = document.getElementsByName('agree1')[0];
-                const agree2 = document.getElementsByName('agree2')[0];
-                const agree3 = document.getElementsByName('agree3')[0];
+                const terms = document.getElementsByName('terms')[0];
+                const privacy = document.getElementsByName('privacy')[0];
+                const sms = document.getElementsByName('sms')[0];
                 const btnSubmit = document.getElementsByClassName('btnNext')[0];
 
                 btnSubmit.onclick = (e) => {
-                    if(agree1.checked && agree2.checked){
+                    if(terms.checked && privacy.checked){
                         form.submit();
                         return true;
                     }else{
-                        showModal('이용약관과 개인정보 취급방침은 필수 동의입니다.');
+                        alert('이용약관과 개인정보 취급방침은 필수 동의입니다.');
                         return false;
                     }
                 }
@@ -32,21 +32,21 @@
                                 <div class="col-md-12">
                                     <h6>■ 사이트 이용약관</h6>
                                     <textarea class="form-control" rows="10" cols="100" readonly>[[${termsDTO.terms}]]</textarea>
-                                    <label class="float-end"><input type="checkbox" name="agree1">동의합니다.</label>
+                                    <label class="float-end"><input type="checkbox" name="terms">동의합니다.</label>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-12">
                                     <h6>■ 개인정보 취급방침</h6>
                                     <textarea class="form-control" rows="10" cols="100" readonly>[[${termsDTO.privacy}]]</textarea>
-                                    <label class="float-end"><input type="checkbox" name="agree2">동의합니다.</label>
+                                    <label class="float-end"><input type="checkbox" name="privacy">동의합니다.</label>
                                 </div>
                             </div>
                             <div class="row mb-3">
                                 <div class="col-md-12">
                                     <h6>□ 마케팅 수신동의</h6>
                                     <textarea class="form-control" rows="10" cols="100" readonly>[[${termsDTO.sms}]]</textarea>
-                                    <label class="float-end"><input type="checkbox" name="agree3">동의합니다.</label>
+                                    <label class="float-end"><input type="checkbox" name="sms">동의합니다.</label>
                                 </div>
                             </div>
                             <div class="text-center mt-4 mb-0">

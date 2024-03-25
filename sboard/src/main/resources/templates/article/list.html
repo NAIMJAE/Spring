@@ -21,20 +21,24 @@
 
                         // 차이가 24시간 이내인 경우 'NEW'를 추가
                         if (differenceInDays < 1) {
-                            const span = `<span class="badge rounded-pill text-bg-warning" name="badge">NEW</span>`;
+                            const span = `<span class="badge border-bottom rounded-pill text-bg-warning" name="badge">NEW</span>`;
                             tdTitles[i].insertAdjacentHTML('beforeend', span);
                         }
                     }
                 }
             </script>
-            <h1 class="mt-4">게시판 목록</h1>
-            <ol class="breadcrumb mb-4">
-                <li class="breadcrumb-item active">0000 게시판 글목록</li>
-            </ol>
+                <h1 class="mt-4 mb-4" th:if="${pageResponseDTO.condition != null}">전체 게시글</h1>
+            <th:block th:if="${pageResponseDTO.condition == null}">
+                <h1 class="mt-4 mb-4" th:if="${pageResponseDTO.dtoList[0].cate == 'notice'}">공지사항</h1>
+                <h1 class="mt-4 mb-4" th:if="${pageResponseDTO.dtoList[0].cate == 'free'}">자유게시판</h1>
+                <h1 class="mt-4 mb-4" th:if="${pageResponseDTO.dtoList[0].cate == 'faq'}">자주묻는질문</h1>
+                <h1 class="mt-4 mb-4" th:if="${pageResponseDTO.dtoList[0].cate == 'qna'}">묻고답하기</h1>
+            </th:block>
+
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-table me-1"></i>
-                    DataTable Example
+                    게시글 목록
                 </div>
                 <div class="card-body">
                     <table id="datatablesSimple" class="table table-hover">
@@ -52,7 +56,9 @@
                             <tr th:each="article, index : ${pageResponseDTO.dtoList}">
                                 <td class="col-1" th:text="${pageResponseDTO.startNo - index.index}"></td>
                                 <td class="tdTitle">
-                                    <a class="text-dark text-decoration-none"  style="font-weight: bold" th:href="@{/article/view(cate=${article.cate}, no=${article.no})}">[[${article.title}]]</a>
+                                    <a class="text-dark text-decoration-none"  style="font-weight: bold" th:href="@{/article/view(cate=${article.cate}, no=${article.no})}">
+                                        [[${article.title}]]</a>
+                                    <span class="badge text-bg-light border-bottom rounded-pill" th:text="${article.comment}"></span>
                                 </td>
                                 <td class="col-2" th:text="${pageResponseDTO.nickList[index.index]}"></td>
                                 <td class="col-1" th:text="${article.hit}"></td>
@@ -73,7 +79,7 @@
 
                             <th:block th:each="n : ${#numbers.sequence(pageResponseDTO.start, pageResponseDTO.end)}">
                                 <li class="page-item" th:classappend="${pageResponseDTO.pg == n ? 'active' : ''}">
-                                    <a class="page-link" th:href="@{/article/list(cate=${pageResponseDTO.cate}, pg=${n})}" th:text="${n}"></a>
+                                    <a class="page-link" th:href="@{/article/list(cate=${pageResponseDTO.cate}, pg=${n}, condition=${pageResponseDTO.condition}, searchText=${pageResponseDTO.searchText})}" th:text="${n}"></a>
                                 </li>
                             </th:block>
 

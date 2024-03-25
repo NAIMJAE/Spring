@@ -8,6 +8,7 @@ import kr.co.sboard.dto.UserDTO;
 import kr.co.sboard.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Service;
@@ -41,14 +42,11 @@ public class UserController {
     }
 
     @PostMapping("/user/terms")
-    public String terms(@RequestParam("agree3") String agree3, Model model){
+    public String terms(TermsDTO termsDTO, Model model){
         log.info("/user/terms - POST");
-        String sms = null;
-        if (agree3.equals("on")){
-            model.addAttribute("sms", "Y");
-        }else if (agree3 == null || agree3.isEmpty()) {
-            model.addAttribute("sms", "N");
-        }
+        log.info("termsDTO : " + termsDTO.toString());
+        String sms = termsDTO.getSms();
+        model.addAttribute("sms", sms);
         return "/user/register";
     }
 
@@ -89,6 +87,32 @@ public class UserController {
         resultMap.put("result", result);
         return ResponseEntity.ok().body(resultMap);
     }
+    // 아이디 찾기 이메일 인증
+    @ResponseBody
+    @GetMapping("/user/sendEmail/{email}/{name}")
+    public ResponseEntity<?> sendEmailForUid(HttpSession session, @PathVariable("email") String email, @PathVariable("name") String name){
+        log.info("이름");
+        UserDTO user = userService.selectUserForNameAndEmail(name, email);
+        if (user != null){
+            return userService.sendEmailCode(session, email);
+        }else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user not found");
+        }
+    }
+
+    // 비밀번호 찾기 이메일 인증
+    @ResponseBody
+    @GetMapping("/user/sendEmailForPw/{email}/{uid}")
+    public ResponseEntity<?> sendEmailForPw(HttpSession session, @PathVariable("email") String email, @PathVariable("uid") String uid){
+        log.info("아이디");
+        UserDTO user = userService.selectUserForUidAndEmail(uid, email);
+        if (user != null){
+            return userService.sendEmailCode(session, email);
+        }else{
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user not found");
+        }
+    }
+    
 
     // 이메일 인증 코드 검사
     @ResponseBody
@@ -109,6 +133,57 @@ public class UserController {
             resultMap.put("result", false);
 
             return ResponseEntity.ok().body(resultMap);
+        }
+    }
+
+    // 아이디 찾기
+    @GetMapping("/user/findId")
+    public String findId(){
+        log.info("/user/findId");
+
+        return "/user/findId";
+    }
+
+    // 아이디 찾기 결과
+    @PostMapping("/user/findIdResult")
+    public String findIdResult(UserDTO userDTO, Model model){
+        log.info("/user/findIdResult");
+
+        UserDTO user = userService.selectUserForNameAndEmail(userDTO.getName(), userDTO.getEmail());
+        model.addAttribute("user", user);
+        return "/user/findIdResult";
+    }
+
+    // 비밀번호 찾기
+    @GetMapping("/user/findPassword")
+    public String findPassword(){
+        log.info("/user/findPassword");
+
+        return "/user/findPassword";
+    }
+
+    // 비밀번호 변경
+    @PostMapping("/user/findPassword")
+    public String findPassword(UserDTO userDTO, Model model){
+        log.info("/user/findPassword");
+        log.info(userDTO.toString());
+        model.addAttribute("user", userDTO.getUid());
+        return "/user/findPasswordChange";
+    }
+
+    // 변경된 비밀번호 저장
+    @PostMapping("/user/findPasswordChange")
+    public String findPasswordChange(UserDTO userDTO, Model model){
+        log.info("/user/findPasswordChange");
+        log.info(userDTO.toString());
+
+        int result = userService.updateUserPassword(userDTO);
+
+        if (result > 0){
+            return "redirect:/user/login";
+        }else {
+            model.addAttribute("user", userDTO.getUid());
+            return "/user/findPasswordChange";
         }
     }
 }

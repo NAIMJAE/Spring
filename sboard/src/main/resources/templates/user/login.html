@@ -21,7 +21,10 @@
                                 <label class="form-check-label" for="inputRememberPassword">Remember Password</label>
                             </div>
                             <div class="d-flex align-items-center justify-content-between mt-4 mb-0">
-                                <a class="small" href="#">Forgot Password?</a>
+                                <div>
+                                    <a class="small" th:href="@{/user/findId}">아이디</a>
+                                    <a class="small" th:href="@{/user/findPassword}">비밀번호 찾기</a>
+                                </div>
                                 <input type="submit" class="btn btn-primary btnSubmit" value="로그인"/>
                             </div>
                         </form>

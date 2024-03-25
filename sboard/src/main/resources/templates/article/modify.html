@@ -31,39 +31,39 @@
                     // 게시글 수정 하기
                     btnSubmit.onclick = function (e){
                         e.preventDefault();
-                        console.log("기존 파일 수 : " + fileValue);
-                        console.log("삭제 파일 수 : " + deleteList.length);
-                        console.log("추가 파일 수 : " + fileInput.files.length);
-                        // 파일 갯수
-                        const count = fileValue - deleteList.length + fileInput.files.length;
-                        console.log("최종 파일 수 : " + count);
-                        form.file.value = count;
+                        const result = confirm("수정된 사항을 저장하시겠습니까?")
+                        if (result){
+                            console.log("기존 파일 수 : " + fileValue);
+                            console.log("삭제 파일 수 : " + deleteList.length);
+                            console.log("추가 파일 수 : " + fileInput.files.length);
+                            // 파일 갯수
+                            const count = fileValue - deleteList.length + fileInput.files.length;
+                            console.log("최종 파일 수 : " + count);
+                            form.file.value = count;
 
-                        // 파일 삭제
-                        if(deleteList != null){
-                            for (const fno of deleteList){
-                                fetch(`/sboard/file/delete/${fno}`)
-                                    .then(response => response.json())
-                                    .then(date => {
-                                        console.log(data);
-                                    })
-                                    .catch(err => console.log(err))
+                            // 파일 삭제
+                            if(deleteList != null){
+                                for (const fno of deleteList){
+                                    fetch(`/sboard/file/delete/${fno}`)
+                                        .then(response => response.json())
+                                        .then(date => {
+                                            console.log(data);
+                                        })
+                                        .catch(err => console.log(err))
+                                }
                             }
+                            // 폼 전송
+                            document.formWrite.submit();
                         }
-                        // 폼 전송
-                        document.formWrite.submit();
                     }
                 }
             </script>
 
-            <h1 class="mt-4">게시판 글수정</h1>
-            <ol class="breadcrumb mb-4">
-                <li class="breadcrumb-item active"></li>
-            </ol>
+            <h1 class="mt-4 mb-4">게시글 수정</h1>
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-table me-1"></i>
-                    0000 게시판 글수정
+                    게시글 번호 : [[${article.no}]]
                 </div>
                 <div class="card-body">
 
@@ -73,6 +73,7 @@
                         <input type="hidden" name="writer" th:value="${#authentication.principal.user.uid}">
                         <input type="hidden" name="cate" th:value="${article.cate}">
                         <input type="hidden" name="file" th:value="${article.file}">
+                        <input type="hidden" name="hit" th:value="${article.hit}">
                         <div class="mb-3">
                             <label for="exampleFormControlInput1" class="form-label">■ 제목</label>
                             <input type="text" class="form-control" name="title" id="exampleFormControlInput1" th:value="${article.title}">
@@ -98,8 +99,8 @@
                 </div>
             </div>
             <div class="text-end">
-                <a th:href="@{/article/list}" class="btn btn-secondary">취소</a>
-                <a th:href="@{/article/write}" class="btn btn-success" id="btnSubmit">글수정</a>
+                <a th:href="@{/article/view(cate=${article.cate}, no=${article.no})}" class="btn btn-secondary btn-sm">취소</a>
+                <a th:href="@{/article/write}" class="btn btn-success btn-sm" id="btnSubmit">글수정</a>
             </div>
         </div>
     <!--내용 끝-->

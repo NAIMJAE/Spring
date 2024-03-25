@@ -9,6 +9,9 @@ public interface UserMapper {
     public TermsDTO selectTerms();
     public void insertUser(UserDTO userDTO);
     public String selectUserForNick(String uid);
+    public UserDTO selectUserForNameAndEmail(String name, String email);
+    public UserDTO selectUserForUidAndEmail(String uid, String email);
+    public int updateUserPassword(String password, String uid);
     public void updateUser();
     public void deleteUser();
     public int selectCheckUid(String uid);

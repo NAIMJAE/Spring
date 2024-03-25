@@ -1,0 +1,97 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/defaultLayout}">
+<!--
+    - http://localhost:8080/sboard/my/setting
+    - 회원정보 수정 및 탈퇴 기능
+    - 회원탈퇴는 해당 사용자의 아이디만 남기고 모두 컬럼의 값을 null 업데이트
+-->
+
+<div class="container-fluid px-4" layout:fragment="content">
+    <h3 class="mt-4 mb-4">나의 설정</h3>
+
+    <!-- 내용 시작 -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            회원정보 설정
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tr>
+                    <td class="col-md-2">아이디</td>
+                    <td class="col-md-10"><input class="form-control w-50" type="text" name="uid" readonly value="abc1234"></td>
+                </tr>
+                <tr>
+                    <td>비밀번호</td>
+                    <td><input class="form-control w-50" type="text" name="pass1"></td>
+                </tr>
+                <tr>
+                    <td>비밀번호 확인</td>
+                    <td class="d-flex">
+                        <input class="form-control w-50" type="text" name="pass2">
+                        <button class="btn btn-primary ms-2">비밀번호 변경</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>회원가입일</td>
+                    <td><input class="form-control border-0" type="text" name="regDate" value="2023-03-23 10:21:23"></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-table me-1"></i>
+            개인정보 수정
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <tr>
+                    <td class="col-md-2">이름</td>
+                    <td class="col-md-10"><input class="form-control w-50" type="text" name="name"></td>
+                </tr>
+                <tr>
+                    <td>별명</td>
+                    <td class="d-flex">
+                        <input class="form-control w-50" type="text" name="nick">
+                        <button class="btn btn-primary ms-2">중복확인</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>이메일</td>
+                    <td class="d-flex">
+                        <input class="form-control w-50" type="text" name="email">
+                        <button class="btn btn-primary ms-2">이메일 인증</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>휴대폰</td>
+                    <td>
+                        <input class="form-control w-50" type="text" name="hp" placeholder="휴대폰 입력"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>주소</td>
+                    <td>
+                        <input class="form-control w-25 mb-2" type="text" name="zip" readonly placeholder="우편번호 검색"/>
+                        <input class="form-control w-75 mb-2" type="text" name="add1" readonly placeholder="기본주소 입력" />
+                        <input class="form-control w-75 mb-2" type="text" name="addr2" placeholder="상세주소 입력"/>
+                    </td>
+
+
+                </tr>
+
+            </table>
+
+        </div>
+
+
+    </div>
+
+    <div class="text-end mb-4">
+        <a th:href="@{#}" class="btn btn-danger">회원탈퇴</a>
+    </div>
+    <!-- 내용 끝 -->
+</div>
+</html>

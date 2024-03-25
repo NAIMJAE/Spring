@@ -5,22 +5,9 @@
         <div class="container-fluid px-4" layout:fragment="content">
 
             <script>
+
                 window.onload = function (){
-                /*
-                    //// 검색 ////
-                    const btnNavbarSearch = document.getElementById('btnNavbarSearch');
-                    const searchCate = document.getElementsByName('cate')[0];
-                    const searchText = document.getElementsByName('searchText')[0];
 
-                    btnNavbarSearch.onclick = function (){
-                        alert('22');
-                        const cate = searchCate.value;
-                        const title = searchText.value;
-
-                        const url = `/sboard/article/list?cate=${cate}&title=${title}`;
-                        window.location.href = url;
-                    }
-*/
                 //// 파일 다운로드 ////
                     const fileLinks = document.getElementsByClassName('fileLink');
 
@@ -42,6 +29,7 @@
                         const parent = CommentForm.parent.value;
                         const writer = CommentForm.writer.value;
                         const content = CommentForm.content.value;
+                        const nick = CommentForm.nick.value;
 
                         const jsonData = {
                             "parent" : parent,
@@ -64,7 +52,7 @@
                                     `<li class="list-group-item d-flex justify-content-between align-items-start">
                                         <div class="ms-2 me-auto col-sm-10">
                                             <div class="fw-bold nameDate">
-                                                <span class="text-dark commentNick">${data.writer}&nbsp;</span>
+                                                <span class="text-dark commentNick">${nick} &nbsp;</span>
                                                 <span class="text-secondary small commentDate">${frontDate} ${backDate}</span>
                                             </div>
                                             <textarea class="col-sm-12 mt-1 border-0" name="content" style="outline: none; resize: none;" readonly>${data.content}</textarea>
@@ -97,16 +85,16 @@
 
                     // 댓글 편집 버튼 클릭 시 이벤트 발생
                     document.addEventListener('click', async function (e){
-                        const btnValue = e.target.className;    // 클릭한 버튼의 클래스 네임
+                        const btnValue = e.target;    // 클릭한 버튼의 클래스 네임
                         console.log(btnValue);
 
                         // 댓글 삭제
-                        if (btnValue.includes('btnCommentDelete') && editing === false){
+                        if (btnValue.classList.contains('btnCommentDelete') && editing === false){
                             e.preventDefault();
 
                             const no = e.target.dataset.no;     // 댓글 글 번호
                             const li = e.target.parentElement;  // 댓글 최상위 li 태그
-                            const result = confirm("정말 삭제하시겠습니까?");
+                            const result = confirm("댓글을 삭제하시겠습니까?");
 
                             if(result){
                                 await fetch(`/sboard/article/commentDelete/${no}`)
@@ -120,7 +108,7 @@
                                     }).catch(err => console.log(err));
                             }
                         // 댓글 수정 취소
-                        }else if(btnValue.includes('btnCommentCancel')){
+                        }else if(btnValue.classList.contains('btnCommentCancel')){
                             e.preventDefault();
 
                             const textarea = e.target.parentElement.querySelector('textarea');
@@ -139,7 +127,7 @@
                             btnRight.classList.remove('btnCommentSave');
                             editing = false;
                         // 댓글 수정
-                        }else if(btnValue.includes('btnCommentModify') && editing === false){
+                        }else if(btnValue.classList.contains('btnCommentModify') && editing === false){
                             e.preventDefault();
 
                             editing = true;
@@ -160,7 +148,7 @@
                             btnLeft.classList.remove('btnCommentDelete');
                             btnRight.classList.remove('btnCommentModify');
                         // 수정된 댓글 저장
-                        }else if(btnValue.includes('btnCommentSave')){
+                        }else if(btnValue.classList.contains('btnCommentSave')){
                             e.preventDefault();
 
                             const no = e.target.dataset.no;
@@ -216,15 +204,15 @@
                 }
             </script>
 
-            <h1 class="mt-4">게시판 글보기</h1>
-            <ol class="breadcrumb mb-4">
-                <li class="breadcrumb-item active"></li>
-            </ol>
+            <h1 class="mt-4 mb-4" th:if="${article.cate == 'notice'}">공지사항</h1>
+            <h1 class="mt-4 mb-4" th:if="${article.cate == 'free'}">자유게시판</h1>
+            <h1 class="mt-4 mb-4" th:if="${article.cate == 'faq'}">자주묻는질문</h1>
+            <h1 class="mt-4 mb-4" th:if="${article.cate == 'qna'}">묻고답하기</h1>
             <!--글보기-->
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-table me-1"></i>
-                    0000 게시판 글보기
+                    게시글 번호 : [[${article.no}]]
                 </div>
 
                 <div class="card-body">
@@ -232,7 +220,7 @@
                 <!--글제목-->
                     <input type="hidden" class="cate" name="cate" th:value="${article.cate}">
 
-                    <table class="table mt-4 mb-0 border-top">
+                    <table class="table mt-2 mb-0 border-top">
                         <tbody>
                         <tr class="table-light">
                             <td><strong name="title" th:text="${article.title}"></strong></td>
@@ -246,12 +234,12 @@
                     </table>
 
                 <!--첨부파일-->
-                    <table class="table mt-0">
+                    <table class="table mt-0" th:if="${article.file > 0}">
                         <tbody>
                             <tr class="table-light">
                                 <td class="col-1">첨부파일</td>
                                 <td>
-                                    <th:block  th:if="${article.file > 0}" th:each="file : ${article.fileList}">
+                                    <th:block th:each="file : ${article.fileList}">
                                     <a th:href="@{/file/fileDownload(fno=${file.fno})}" class="fileLink" th:data-fno="${file.fno}" th:text="${file.oName}"></a>
                                     <span class="badge text-bg-secondary rounded-pill" th:text="${file.download}"></span>
                                     </th:block>
@@ -287,6 +275,7 @@
 
                 <!--댓글 작성-->
                     <form name="CommentForm">
+                        <input type="hidden" id="nick" name="nick" th:value="${#authentication.principal.user.nick}">
                         <div class="mb-3 mt-5">
                             <input type="hidden" name="parent" th:value="${article.no}">
                             <input type="hidden" name="writer" th:value="${#authentication.principal.user.uid}">

@@ -32,6 +32,10 @@ public class ArticleController {
     private final UserService userService;
 
     // 게시물 조회 (10개씩)
+    // cate만 전달 - defaultLayout
+    // cate, pg 전달 - list pagination
+    // cate, condition, searchText 전달 - 검색창
+    // article/list?cate=free&condition=title&searchText=놀이터&pg=3
     @GetMapping("/article/list")
     public String list(Model model, PageRequestDTO pageRequestDTO){
         log.info("/article/list - GET");
@@ -39,7 +43,7 @@ public class ArticleController {
         // 게시판 종류별 게시물 10개씩 조회
         PageResponseDTO pageResponseDTO = articleService.selectArticleForCate(pageRequestDTO);
         model.addAttribute("pageResponseDTO", pageResponseDTO);
-        log.info("nicklist : " + pageResponseDTO.getNickList().toString());
+        log.info("nickList : " + pageResponseDTO.getNickList().toString());
         return "/article/list";
     }
     
@@ -50,8 +54,6 @@ public class ArticleController {
         return "/article/write";
     }
 
-    // 게시글 검색 (10개씩)
-    
     // 게시글 출력 1개 (/article/view)
     @GetMapping("/article/view")
     public String view(String cate, int no, Model model){
@@ -81,17 +83,15 @@ public class ArticleController {
     @PostMapping("/article/write")
     public String write(HttpServletRequest req, ArticleDTO articleDTO){
         log.info("/article/write - POST");
-        String cate = articleDTO.getCate();
         String regip = req.getRemoteAddr();
         LocalDateTime rdate = LocalDateTime.now();
         articleDTO.setRegip(regip);
         articleDTO.setRdate(rdate);
 
         log.info(articleDTO.toString());
+        int no = articleService.insertArticle(articleDTO);
 
-        articleService.insertArticle(articleDTO);
-
-        return "redirect:/article/list?cate=" + cate;
+        return "redirect:/article/view?no=" + no;
     }
     
     // 게시글 수정 페이지 매핑
@@ -117,10 +117,10 @@ public class ArticleController {
 
         log.info("게시글 수정 controller3 articleDTO : " + articleDTO.toString());
 
-        articleService.updateArticle(articleDTO);
+        int no = articleService.updateArticle(articleDTO);
 
         log.info("게시글 수정 controller4 끝");
-        return "redirect:/article/list";
+        return "redirect:/article/view?no=" + no;
     }
 
     // 게시글 삭제

@@ -10,6 +10,8 @@ import kr.co.sboard.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -61,7 +63,7 @@ public class UserService {
     @Value("${spring.mail.username}")
     private String sender;
 
-    public void sendEmailCode(HttpSession session, String receiver){
+    public ResponseEntity<?> sendEmailCode(HttpSession session, String receiver){
 
         log.info("sender : " + sender);
 
@@ -85,9 +87,25 @@ public class UserService {
             message.setContent(content, "text/html;charset=UTF-8");
 
             javaMailSender.send(message);
-
+            return ResponseEntity.status(HttpStatus.OK).body("success");
         }catch(Exception e){
             log.error("sendEmailConde : " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found");
         }
+    }
+
+    // 이메일로 사용자 찾기
+    public UserDTO selectUserForNameAndEmail(String name, String email){
+        return userMapper.selectUserForNameAndEmail(name, email);
+    }
+    // 이메일로 사용자 찾기
+    public UserDTO selectUserForUidAndEmail(String uid, String email){
+        return userMapper.selectUserForUidAndEmail(uid, email);
+    }
+
+    // 비밀번호 변경
+    public int updateUserPassword(UserDTO userDTO){
+        String encoded = passwordEncoder.encode(userDTO.getPass());
+        return userMapper.updateUserPassword(encoded, userDTO.getUid());
     }
 }
