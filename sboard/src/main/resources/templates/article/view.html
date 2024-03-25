@@ -291,6 +291,15 @@
                 <!--댓글 목록-->
                     <p class="border-top border-bottom p-2 mt-5 bg-light"><strong>댓글 목록</strong></p>
                     <ul class="list-group list-group" id="commentUl">
+                        <th:block th:if="${comments.isEmpty()}">
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div class="ms-2 me-auto col-sm-10 pt-4 pb-4">
+                                    등록된 댓글이 없습니다.
+                                </div>
+                            </li>
+                        </th:block>
+
+                        <th:block th:if="${!comments.isEmpty()}">
                         <li class="list-group-item d-flex justify-content-between align-items-start" th:each="comment, index : ${comments}">
                             <div class="ms-2 me-auto col-sm-10">
                                 <div class="fw-bold nameDate">
@@ -304,6 +313,7 @@
                             <button type="button" class="mt-2 btn btn-sm btn-outline-secondary btnCommentModify" th:data-no="${comment.no}">수정</button>
                             </th:block>
                         </li>
+                        </th:block>
                     </ul>
 
                 </div> <!--card-body end-->

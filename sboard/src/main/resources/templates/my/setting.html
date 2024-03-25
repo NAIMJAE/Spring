@@ -7,91 +7,258 @@
     - 회원탈퇴는 해당 사용자의 아이디만 남기고 모두 컬럼의 값을 null 업데이트
 -->
 
-<div class="container-fluid px-4" layout:fragment="content">
-    <h3 class="mt-4 mb-4">나의 설정</h3>
+    <div class="container text-center px-4" layout:fragment="content">
+        <div class="row justify-content-md-center">
+        <!-- 내용 시작 -->
+            <div class="col-md-6">
+                <h3 class="mt-4 mb-4">[[${user.name}]] 님</h3>
 
-    <!-- 내용 시작 -->
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-table me-1"></i>
-            회원정보 설정
-        </div>
-        <div class="card-body">
-            <table class="table">
-                <tr>
-                    <td class="col-md-2">아이디</td>
-                    <td class="col-md-10"><input class="form-control w-50" type="text" name="uid" readonly value="abc1234"></td>
-                </tr>
-                <tr>
-                    <td>비밀번호</td>
-                    <td><input class="form-control w-50" type="text" name="pass1"></td>
-                </tr>
-                <tr>
-                    <td>비밀번호 확인</td>
-                    <td class="d-flex">
-                        <input class="form-control w-50" type="text" name="pass2">
-                        <button class="btn btn-primary ms-2">비밀번호 변경</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>회원가입일</td>
-                    <td><input class="form-control border-0" type="text" name="regDate" value="2023-03-23 10:21:23"></td>
-                </tr>
-            </table>
+                <div class="card mb-5">
+                    <div class="card-body text-center">
+                        <h4 class="card-title">회원 정보 확인</h4>
+                        <h5 class="card-text pt-2 pb-2">개인 정보 보호를 위해 비밀번호를 입력해주세요.</h5>
+                        <input class="w-25 p-1" type="password" name="inputCheckPass" id="inputCheckPass">
+                        <button href="#" class="btn btn-primary ms-2" id="btnCheckPass">확인</button>
+                    </div>
+                </div>
+            <!--가려두기-->
+                <script>
+                    window.onload = function (){
+                        const inputCheckPass = document.getElementById('inputCheckPass');
+                        const btnCheckPass = document.getElementById('btnCheckPass');
+
+                        const inputPass = document.getElementById('inputPass');
+                        const inputPass2 = document.getElementById('inputPass2');
+                        const inputNick = document.getElementById('inputNick');
+                        const inputEmail = document.getElementById('inputEmail');
+                        const inputCode = document.getElementById('inputCode');
+                        const inputHp = document.getElementById('inputHp');
+
+                        const btnChangePass = document.getElementById('btnChangePass');
+                        const btnChangeNick = document.getElementById('btnChangeNick');
+                        const btnChangeEmail = document.getElementById('btnChangeEmail');
+                        const btnChangeHp = document.getElementById('btnChangeHp');
+
+                        const btnSavePass = document.getElementById('btnSavePass');
+                        const btnSaveNick = document.getElementById('btnSaveNick');
+                        const btnSaveHp = document.getElementById('btnSaveHp');
+
+                        const btnSendCode = document.getElementById('btnSendCode');
+                        const btnCheckCode = document.getElementById('btnCheckCode');
+
+                        const btnUserDelete = document.getElementById('btnUserDelete');
+
+                        // 비밀번호 인증 통과시 개인정보창 표시
+
+                        // 변경 버튼을 누르면 입력창 생성
+                        // 입력 후 확인 누르면 유효성 검사후 저장
+                        // 입력 창 사라지고 변경한 정보로 대체
+
+                        // 삭제 버튼 클릭시 비밀번호 한번 더 확인 하고 삭제
+
+                        // 버튼 색 구분하기
+                    }
+                </script>
+
+                <div>
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-table me-1"></i>
+                            개인정보
+                        </div>
+                        <div class="card-body">
+                            <form name="form">
+                            <!--아이디-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-2 p-3">
+                                        아이디
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p class="p-2 mb-md-0 mt-2">[[${user.uid}]]</p>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="btn btn-secondary p-2 ps-1 w-50" type="button" id="btnChangePass" name="btnChangePass" value="비밀번호 변경"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!--비밀번호 변경-->
+                                <div class="row p-2 pb-0 bg-light">
+                                    <div class="col-md-3 pt-3 pb-3">
+                                        비밀번호 변경
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="form-control p-2" type="password" id="inputPass" name="inputPass" placeholder="비밀번호 입력"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                    </div>
+                                </div>
+
+                                <div class="row p-2 pt-0 border-bottom bg-light">
+                                    <div class="col-md-3 p-0 pt-3 pb-3">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="form-control p-2" type="password" id="inputPass2" name="inputPass2" placeholder="비밀번호 확인"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="btn btn-secondary p-2 w-100" type="button" id="btnSavePass" name="btnSavePass" value="비밀번호 확인"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!--가입일-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-2 p-3">
+                                        가입일
+                                    </div>
+                                    <div class="col-md-5 p-3">
+                                        [[${user.rdate}]]
+                                    </div>
+                                    <div class="col-md-5 p-3">
+                                    </div>
+                                </div>
+                            <!--이름-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-2 p-3">
+                                        이름
+                                    </div>
+                                    <div class="col-md-5 p-3">
+                                        [[${user.name}]]
+                                    </div>
+                                    <div class="col-md-5 p-3">
+                                    </div>
+                                </div>
+                            <!--닉네임-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-2 p-3">
+                                        닉네임
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p class="p-2 mb-md-0 mt-2">[[${user.nick}]]</p>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="btn btn-secondary p-2 w-50" type="button" id="btnChangeNick" name="btnChangeNick" value="닉네임 변경"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!--닉네임 변경-->
+                                <div class="row p-2 border-bottom bg-light">
+                                    <div class="col-md-3 pt-3 pb-3">
+                                        이메일 변경
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="form-control p-2" type="password" id="inputNick" name="inputNick" placeholder="닉네임 입력"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="btn btn-secondary p-2 w-100" type="button" id="btnSaveNick" name="btnSaveNick" value="닉네임 확인"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!--이메일-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-2 p-3">
+                                        이메일
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p class="p-2 mb-md-0 mt-2">[[${user.email}]]</p>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="btn btn-secondary p-2 w-50" type="button" id="btnChangeEmail" name="btnChangeEmail" value="이메일 변경"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!--이메일 변경-->
+                                <div class="row p-2 pb-0 bg-light">
+                                    <div class="col-md-3 pt-3 pb-3">
+                                        이메일 변경
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="form-control p-2" type="password" id="inputEmail" name="inputEmail" placeholder="이메일 입력"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="btn btn-secondary p-2 w-100" type="button" id="btnSendEmail" name="btnSendEmail" value="인증번호 전송"/>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row p-2 pt-0 border-bottom bg-light">
+                                    <div class="col-md-3 p-0 pt-3 pb-3">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="form-control p-2 " type="text" id="inputCode" name="inputCode" placeholder="인증번호 입력"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="btn btn-secondary p-2 w-100" type="button" id="btnCheckCode" name="btnCheckCode" value="인증코드 확인"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!--연락처-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-2 p-3">
+                                        연락처
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p class="p-2 mb-md-0 mt-2">[[${user.hp}]]</p>
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="btn btn-secondary w-50" type="button" id="btnChangeHp" name="btnChangeHp" value="연락처 변경"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!--연락처 변경-->
+                                <div class="row p-2 border-bottom bg-light">
+                                    <div class="col-md-3 pt-3 pb-3">
+                                        연락처 변경
+                                    </div>
+                                    <div class="col-md-5">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="form-control p-2" type="text" id="inputHp" name="inputHp" placeholder="연락처 입력"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="btn btn-secondary p-2 w-100" type="button" id="btnSaveHp" name="btnSaveHp" value="연락처 확인"/>
+                                        </div>
+                                    </div>
+                                </div>
+                            <!--주소-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-2 p-3">
+                                        주소
+                                    </div>
+                                    <div class="col-md-5 p-3">
+                                        <p class="text-start ps-2">[[${user.zip}]]</p>
+                                        <p class="text-start ps-2">[[${user.addr1}]]</p>
+                                        <p class="text-start ps-2">[[${user.addr2}]]</p>
+                                    </div>
+                                    <div class="col-md-5 p-3">
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="text-end mb-4">
+                        <a th:href="@{#}" class="btn btn-danger" id="btnUserDelete">회원탈퇴</a>
+                    </div>
+                </div>
+            </div>
+        <!-- 내용 끝 -->
         </div>
     </div>
-    <div class="card mb-4">
-        <div class="card-header">
-            <i class="fas fa-table me-1"></i>
-            개인정보 수정
-        </div>
-        <div class="card-body">
-            <table class="table">
-                <tr>
-                    <td class="col-md-2">이름</td>
-                    <td class="col-md-10"><input class="form-control w-50" type="text" name="name"></td>
-                </tr>
-                <tr>
-                    <td>별명</td>
-                    <td class="d-flex">
-                        <input class="form-control w-50" type="text" name="nick">
-                        <button class="btn btn-primary ms-2">중복확인</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>이메일</td>
-                    <td class="d-flex">
-                        <input class="form-control w-50" type="text" name="email">
-                        <button class="btn btn-primary ms-2">이메일 인증</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>휴대폰</td>
-                    <td>
-                        <input class="form-control w-50" type="text" name="hp" placeholder="휴대폰 입력"/>
-                    </td>
-                </tr>
-                <tr>
-                    <td>주소</td>
-                    <td>
-                        <input class="form-control w-25 mb-2" type="text" name="zip" readonly placeholder="우편번호 검색"/>
-                        <input class="form-control w-75 mb-2" type="text" name="add1" readonly placeholder="기본주소 입력" />
-                        <input class="form-control w-75 mb-2" type="text" name="addr2" placeholder="상세주소 입력"/>
-                    </td>
-
-
-                </tr>
-
-            </table>
-
-        </div>
-
-
-    </div>
-
-    <div class="text-end mb-4">
-        <a th:href="@{#}" class="btn btn-danger">회원탈퇴</a>
-    </div>
-    <!-- 내용 끝 -->
-</div>
 </html>
