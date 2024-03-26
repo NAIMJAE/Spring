@@ -1,6 +1,7 @@
-package kr.co.ch07.entity;
+package kr.co.ch07.entity.board;
 
 import jakarta.persistence.*;
+import kr.co.ch07.entity.board.Article;
 import lombok.*;
 
 @Getter

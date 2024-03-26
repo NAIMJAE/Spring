@@ -10,6 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,12 +39,13 @@ public class FileController {
     }
 
     // 프로필 사진 업로드
-    @PostMapping("/uploadFile")
-    public String handleFileUpload(@RequestParam("file") MultipartFile file) {
+    @PostMapping("/file/uploadProfile")
+    public ResponseEntity<?> handleFileUpload(@RequestParam("file") MultipartFile file) {
+        log.info("uploadProfile");
         if (!file.isEmpty()) {
             try {
                 // 파일 저장 경로 설정
-                String uploadDir = "/resource/images";
+                String uploadDir = "src/main/resources/static/images";
                 File dir = new File(uploadDir);
                 if (!dir.exists()) {
                     dir.mkdirs();
@@ -58,12 +61,18 @@ public class FileController {
                 stream.flush();
                 stream.close();
 
-                return "File uploaded successfully: " + fileName;
+                Map<String, Object> resultMap = new HashMap<>();
+                resultMap.put("result", "File uploaded successfully: " + fileName);
+                return ResponseEntity.ok().body(resultMap);
             } catch (Exception e) {
-                return "Failed to upload file: " + e.getMessage();
+                Map<String, Object> resultMap = new HashMap<>();
+                resultMap.put("result", "Failed to upload file: " + e.getMessage());
+                return ResponseEntity.ok().body(resultMap);
             }
         } else {
-            return "No file uploaded";
+            Map<String, Object> resultMap = new HashMap<>();
+            resultMap.put("result", "No file uploaded");
+            return ResponseEntity.ok().body(resultMap);
         }
     }
 

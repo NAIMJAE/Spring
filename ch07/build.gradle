@@ -34,6 +34,7 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    // Quertdsl 설정 추가 - annotationProcessor : 컴파일 시점에 만드는 객체를 인식
     // https://mvnrepository.com/artifact/com.querydsl/querydsl-jpa
     implementation 'com.querydsl:querydsl-jpa:5.1.0:jakarta'
     annotationProcessor 'com.querydsl:querydsl-apt:5.1.0:jakarta'
@@ -46,13 +47,13 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-// QueryDSL 설정
+// QueryDSL 설정 - main 하위에 Querydsl 생성 설정
 def querydslDir = "src/main/generated"
 
 sourceSets {
     main.java.srcDir querydslDir
 }
-
+// Qclass 파일 생성 위치 설정
 tasks.withType(JavaCompile) {
     options.generatedSourceOutputDirectory = file(querydslDir)
 }
