@@ -78,7 +78,7 @@ public class UserController {
         log.info("type : " + type + " | value : " + value + " | result : " + result);
 
         // 이메일 인증이면
-        if(type.equals("email")){
+        if(result == 0 && type.equals("email")){
             log.info("email : " + value);
             userService.sendEmailCode(session, value);
         }
@@ -89,7 +89,7 @@ public class UserController {
     }
     // 아이디 찾기 이메일 인증
     @ResponseBody
-    @GetMapping("/user/sendEmail/{email}/{name}")
+    @PostMapping("/user/sendEmail/{email}/{name}")
     public ResponseEntity<?> sendEmailForUid(HttpSession session, @PathVariable("email") String email, @PathVariable("name") String name){
         log.info("이름");
         UserDTO user = userService.selectUserForNameAndEmail(name, email);

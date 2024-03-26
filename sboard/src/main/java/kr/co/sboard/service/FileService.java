@@ -59,9 +59,6 @@ public class FileService {
             log.info("파일 업로드 service3 파일 저장 for문 시작");
             // 첨부파일이 없으면 에러발생 / null 체크
 
-
-
-
             if (!mf.isEmpty()){
                 log.info("파일 업로드 service4 파일이 null이 아닐때");
 
