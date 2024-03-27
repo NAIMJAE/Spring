@@ -1,5 +1,6 @@
 package kr.co.sboard.service;
 
+import com.querydsl.core.Tuple;
 import jakarta.transaction.Transactional;
 import kr.co.sboard.dto.ArticleDTO;
 import kr.co.sboard.dto.FileDTO;
@@ -76,61 +77,50 @@ public class ArticleService {
         return articleDTO;
     }
 
-    // 게시판별 게시글 조회
-    public PageResponseDTO selectArticleForCate(PageRequestDTO pageRequestDTO){
+    // 게시판별 게시글 조회 ///////////////////////////////////////////////////////////
+    public PageResponseDTO selectArticles(PageRequestDTO pageRequestDTO){
 
+        log.info("findByParentAndCate...1");
         Pageable pageable = pageRequestDTO.getPageable("no");
 
-        // Repository 메서드에 Pageable 객체 전달하여 페이징 처리된 결과 가져오기
-        Page<Article> pageArticle = null;
-        if(pageRequestDTO.getCondition() != null && !pageRequestDTO.getCondition().isEmpty()){
+        log.info("findByParentAndCate...2");
+        Page<Tuple> pageArticle = articleRepository.selectArticles(pageRequestDTO, pageable);
 
-            // select * from `article` where `cate`= ${cate} and `parent`=0 and `${condition}` lick %${searchText}% limit (? , 10);
-
-            if (pageRequestDTO.getCondition().equals("title")){
-                pageArticle = articleRepository
-                        .findByParentAndTitleContaining(0, pageRequestDTO.getSearchText(), pageable);
-            }else if (pageRequestDTO.getCondition().equals("content")){
-                pageArticle = articleRepository
-                        .findByParentAndContentContaining(0, pageRequestDTO.getSearchText(), pageable);
-            }else if (pageRequestDTO.getCondition().equals("nick")){
-                log.info(pageRequestDTO.getSearchText());
-                User user = userRepository.findByNick(pageRequestDTO.getSearchText());
-                if (user != null) {
-                    log.info(user.toString());
-                    pageArticle = articleRepository.findByParentAndWriterContaining(0, user.getUid(), pageable);
-                } else {
-                    pageArticle = articleRepository.findByParentAndWriterContaining(0, null, pageable);
-                }
-            }
-
-        }else {
-            pageArticle = articleRepository
-                    .findByCateAndParent(pageRequestDTO.getCate(), 0, pageable);
-            log.info(pageArticle.toString());
-        }
-
+        log.info("findByParentAndCate...3 : " + pageArticle);
         List<ArticleDTO> dtoList = pageArticle.getContent().stream()
-                                    .map(entity -> modelMapper.map(entity, ArticleDTO.class))
-                                    .toList();
-        log.info("dtoList : " + dtoList.toString());
-        // 닉네임 추출
-        List<String> nickList = new ArrayList<>();
-        for (ArticleDTO list : dtoList){
-            Optional<User> optUser = userRepository.findById(list.getWriter());
-            String nick = optUser.get().getNick();
-            log.info("nick : " + nick);
-            nickList.add(nick);
-        }
+                .map(tuple -> {
+                    Article article = tuple.get(0, Article.class);
+                    String nick = tuple.get(1, String.class);
+                    article.setNick(nick);
+
+                    return modelMapper.map(article, ArticleDTO.class);
+                    }
+                )
+                .toList();
 
         int total = (int) pageArticle.getTotalElements();
 
         return PageResponseDTO.builder()
                 .pageRequestDTO(pageRequestDTO)
                 .dtoList(dtoList)
-                .nickList(nickList)
-                .condition(pageRequestDTO.getCondition())
-                .searchText(pageRequestDTO.getSearchText())
+                .total(total)
+                .build();
+    }
+
+    public PageResponseDTO searchArticles(PageRequestDTO pageRequestDTO){
+
+        Pageable pageable = pageRequestDTO.getPageable("no");
+        Page<Article> pageArticle = articleRepository.searchArticles(pageRequestDTO, pageable);
+
+        List<ArticleDTO> dtoList = pageArticle.getContent().stream()
+                .map(entity -> modelMapper.map(entity, ArticleDTO.class))
+                .toList();
+
+        int total = (int) pageArticle.getTotalElements();
+
+        return PageResponseDTO.builder()
+                .pageRequestDTO(pageRequestDTO)
+                .dtoList(dtoList)
                 .total(total)
                 .build();
     }

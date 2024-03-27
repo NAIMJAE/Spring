@@ -28,6 +28,8 @@ public class User {
     private String zip;
     private String addr1;
     private String addr2;
+    @Lob
+    private String profile;
     private String regip;
     private String sms;
 

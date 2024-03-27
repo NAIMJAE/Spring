@@ -1,6 +1,7 @@
 package kr.co.sboard.dto;
 
 import lombok.*;
+import org.springframework.data.annotation.Transient;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -29,4 +30,6 @@ public class ArticleDTO {
 
     private UserDTO user;
     private List<FileDTO> fileList;
+    //@Transient
+    private String nick;
 }

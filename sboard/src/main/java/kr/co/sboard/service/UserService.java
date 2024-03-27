@@ -6,9 +6,12 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.servlet.http.HttpSession;
 import kr.co.sboard.dto.TermsDTO;
 import kr.co.sboard.dto.UserDTO;
+import kr.co.sboard.entity.User;
 import kr.co.sboard.mapper.UserMapper;
+import kr.co.sboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +29,8 @@ public class UserService {
 
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final ModelMapper modelMapper;
 
     // JavaMailSender 주입
     private final JavaMailSender javaMailSender;
@@ -43,8 +48,9 @@ public class UserService {
         userMapper.insertUser(userDTO);
     }
 
-    public String selectUserForNick(String uid){
-        return userMapper.selectUserForNick(uid);
+    public UserDTO selectUserForNick(String uid){
+        Optional<User> optUser = userRepository.findById(uid);
+        return modelMapper.map(optUser, UserDTO.class);
     }
 
     public void updateUser(){}

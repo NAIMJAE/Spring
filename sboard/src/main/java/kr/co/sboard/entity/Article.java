@@ -36,4 +36,6 @@ public class Article {
 
     @OneToMany(mappedBy = "ano")
     private List<File> fileList;
+
+    private String nick;
 }

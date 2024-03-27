@@ -262,7 +262,8 @@
                         <tr>
                             <td colspan="2">
                                 <div class="text-end">
-                                    <a th:href="@{/article/list(cate=${article.cate})}" class="btn btn-secondary btn-sm">목록</a>
+                                    <a th:if="${pageResponseDTO.keyword == null}" th:href="@{/article/list(cate=${pageResponseDTO.cate}, pg=${pageResponseDTO.pg})}" class="btn btn-secondary btn-sm">목록</a>
+                                    <a th:if="${pageResponseDTO.keyword != null}" th:href="@{/article/list(cate=${pageResponseDTO.cate}, type=${pageResponseDTO.type},keyword=${pageResponseDTO.keyword}, pg=${pageResponseDTO.pg})}" class="btn btn-secondary btn-sm">목록</a>
                                     <th:block th:if="${article.writer} == ${#authentication.principal.user.uid}">
                                         <a th:href="@{/article/modify(no=${article.no})}" class="btn btn-success btn-sm" id="btnSubmit">수정</a>
                                         <a th:href="@{/article/delete(no=${article.no}, cate=${article.cate})}" class="btn btn-danger btn-sm" id="btnDelete">삭제</a>
@@ -301,17 +302,25 @@
 
                         <th:block th:if="${!comments.isEmpty()}">
                         <li class="list-group-item d-flex justify-content-between align-items-start" th:each="comment, index : ${comments}">
-                            <div class="ms-2 me-auto col-sm-10">
+
+                            <div class="ms-0">
+                                <img class="p-2 mb-md-0 img-fluid" style="width: 85px; height: 85px" th:src="@{/images/} + ${commentProfileList[index.index]}" alt="프로필사진"/>
+                            </div>
+
+                            <div class="ms-2 me-auto col-sm-9">
                                 <div class="fw-bold nameDate">
                                     <span class="text-dark commentNick">[[${commentNickList[index.index]}]]&nbsp;&nbsp;</span>
                                     <span class="text-secondary small commentDate">[[${#temporals.format(comment.rdate, 'yyyy-MM-dd HH:mm')}]]</span>
                                 </div>
                                 <textarea class="col-sm-12 mt-1 border-0" name="content" style="outline: none; resize: none;" readonly>[[${comment.content}]]</textarea>
                             </div>
+
+
                             <th:block th:if="${comment.writer} == ${#authentication.principal.user.uid}">
                             <button type="button" class="me-2 mt-2 btn btn-sm btn-outline-secondary btnCommentDelete" th:data-no="${comment.no}">삭제</button>
                             <button type="button" class="mt-2 btn btn-sm btn-outline-secondary btnCommentModify" th:data-no="${comment.no}">수정</button>
                             </th:block>
+
                         </li>
                         </th:block>
                     </ul>

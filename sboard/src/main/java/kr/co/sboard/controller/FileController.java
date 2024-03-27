@@ -40,40 +40,17 @@ public class FileController {
 
     // 프로필 사진 업로드
     @PostMapping("/file/uploadProfile")
-    public ResponseEntity<?> handleFileUpload(@RequestParam("file") MultipartFile file) {
-        log.info("uploadProfile");
-        if (!file.isEmpty()) {
-            try {
-                // 파일 저장 경로 설정
-                String uploadDir = "src/main/resources/static/images";
-                File dir = new File(uploadDir);
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
+    public ResponseEntity<?> uploadProfile(@RequestParam("file") MultipartFile file, @RequestParam("uid") String uid) {
+        log.info("uploadProfile...1");
+        //return fileService.uploadProfile(file, uid);
 
-                // 파일 이름 생성
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
 
-                // 파일 저장
-                File uploadedFile = new File(dir.getAbsolutePath() + File.separator + fileName);
-                BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(uploadedFile));
-                stream.write(file.getBytes());
-                stream.flush();
-                stream.close();
+        String sName = fileService.saveProfile(file, uid);
+        log.info("uploadProfile...2 : " + sName);
+        Map<String, String> resultMap = new HashMap<>();
+        resultMap.put("result", sName);
+        return ResponseEntity.ok().body(resultMap);
 
-                Map<String, Object> resultMap = new HashMap<>();
-                resultMap.put("result", "File uploaded successfully: " + fileName);
-                return ResponseEntity.ok().body(resultMap);
-            } catch (Exception e) {
-                Map<String, Object> resultMap = new HashMap<>();
-                resultMap.put("result", "Failed to upload file: " + e.getMessage());
-                return ResponseEntity.ok().body(resultMap);
-            }
-        } else {
-            Map<String, Object> resultMap = new HashMap<>();
-            resultMap.put("result", "No file uploaded");
-            return ResponseEntity.ok().body(resultMap);
-        }
     }
 
 }

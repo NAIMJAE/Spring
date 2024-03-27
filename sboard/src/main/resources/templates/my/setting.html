@@ -452,36 +452,48 @@
                         // 사진 변경
                         const btnChangeImg = document.getElementById('btnChangeImg');
                         const profileImg = document.getElementById('profileImg');
+                        const userProfileImg = document.getElementById('userProfileImg');
+                        const userImgDiv = document.getElementById('userImgDiv');
 
                         btnChangeImg.onclick = function (){
                             const file = profileImg.files[0];
 
-                            if (!file) {
-                                console.log('파일을 선택하세요.');
+                            if (file == null) {
+                                alert("파일을 선택해주세요.");
                                 return;
+                            }else{
+                                const result = confirm("선택하신 사진으로 변경하시겠습니까?");
+                                if(result){
+                                    const uid = CheckUid.value;
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    formData.append('uid', uid);
+
+
+                                        fetch("/sboard/file/uploadProfile", {
+                                            method: "POST",
+                                            body: formData
+                                        })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            console.log(data.result);
+
+                                            setTimeout(() => {
+                                                alert("프로필 사진을 변경했습니다.");
+                                                userProfileImg.src = data.result;
+                                            }, 0);
+                                            // 파일 업로드 성공 후 동작할 내용 추가
+                                            // 반영되는데 딜레이도 있음
+                                        })
+                                        .catch(err => console.log(err))
+
+                                }
                             }
-
-                            const formData = new FormData();
-                            formData.append('file', file);
-
-                            fetch("/sboard/file/uploadProfile", {
-                                method: "POST",
-                                body: formData
-                            })
-                                .then(response => response.json())
-                                .then(data => {
-                                    console.log(data.result);
-                                    // 파일 업로드 성공 후 동작할 내용 추가
-
-                                    // 저장은 되는데 2번 저장됨 2번 호출됨
-                                    // db저장하고 불러오기만 어떻게 추가해보면 될듯
-                                })
-                            .catch(err => console.log(err))
                         }
                     }
                 </script>
 
-                <div id="privateInfo" style="display: none">
+                <div id="privateInfo" style="display: block">
                     <div class="card mb-4">
                         <div class="card-header">
                             <i class="fas fa-table me-1"></i>
@@ -491,17 +503,27 @@
                             <form name="form">
                             <!--프로필 사진-->
                                 <div class="row p-2 border-bottom">
-                                    <div class="col-md-8">
-                                        <div class="">
-                                            <img class="p-2 mb-md-0 img-fluid" style="width: 200px; height: 200px" th:src="@{/images/user.png}" alt="프로필사진"/>
+                                    <div class="col-md-6">
+                                        <div id="userImgDiv">
+                                            <img class="p-2 mb-md-0 img-fluid" id="userProfileImg" style="width: 200px; height: 200px" th:src="${user.profile}" alt="프로필사진"/>
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-6">
                                         <div class="mb-3 mb-md-0 mt-2">
-                                            <input type="file" name="file" accept="image/*" id="profileImg">
-                                            <button type="button" id="btnChangeImg">사진 변경</button>
-                                            <p>권장 크기 : 200px * 200px<br>확장자 : png파일</p>
-                                            <a href="#">기본사진으로 변경</a>
+                                            <input class="border-bottom" type="file" name="file" accept="image/*" id="profileImg">
+                                            <p class="text-start ps-3 mt-2">권장 크기 : 200px * 200px<br>확장자 : png, jpg</p>
+
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <button class="btn btn-outline-secondary p-2" type="button" id="btnChangeImg">
+                                                    <span role="status">프로필 사진 변경</span>
+                                                </button>
+                                            </div>
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <button class="btn btn-outline-secondary p-2" type="button" id="btnChangeDefaultImg">
+                                                    <span role="status">기본사진으로 변경</span>
+                                                </button>
+                                            </div>
+
                                             <!--
                                                 이 div를 form으로 만들어서 multipart/form-data로 file 전송하기
                                                 service에서 파일 저장 and DB 저장

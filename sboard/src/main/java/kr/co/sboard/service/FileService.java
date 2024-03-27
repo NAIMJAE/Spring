@@ -4,8 +4,10 @@ import jakarta.transaction.Transactional;
 import kr.co.sboard.dto.ArticleDTO;
 import kr.co.sboard.dto.FileDTO;
 import kr.co.sboard.entity.Article;
+import kr.co.sboard.entity.User;
 import kr.co.sboard.repository.ArticleRepository;
 import kr.co.sboard.repository.FileRepository;
+import kr.co.sboard.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.javassist.bytecode.stackmap.BasicBlock;
@@ -19,7 +21,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -34,6 +38,7 @@ public class FileService {
 
     private final FileRepository fileRepository;
     private final ArticleRepository articleRepository;
+    private final UserRepository userRepository;
 
     @Value("${file.upload.path}")
     private String fileUploadPath;
@@ -73,6 +78,7 @@ public class FileService {
                 try {
                     // mf를 path경로에 sName로 생성
                     mf.transferTo(new File(path, sName));
+
                     // 파일 정보 생성
                     FileDTO fileDTO = FileDTO.builder()
                             .oName(oName)
@@ -163,5 +169,118 @@ public class FileService {
             }
         }
         log.info("파일 삭제 service12 끝");
+    }
+
+    // 프로필 사진 업로드
+
+    @Value("${file.profile.path}")
+    private String profilePath;
+
+    public String uploadProfile2(MultipartFile mf, String uid){
+
+        // uploads 폴더 자동 생성
+        File file = new File(profilePath);
+        if(!file.exists()){
+            file.mkdir();
+        }
+
+        // 파일 업로드 시스템 경로 구하기
+        String path = file.getAbsolutePath();
+        log.info("파일 업로드 service2 파일 저장 시작");
+
+        // 첨부파일이 없으면 에러발생 / null 체크
+
+        if (!mf.isEmpty()) {
+            log.info("파일 업로드 service4 파일이 null이 아닐때");
+
+            // oName, sName 구하기
+            String oName = mf.getOriginalFilename();
+            String ext = oName.substring(oName.lastIndexOf("."));
+            String sName = UUID.randomUUID().toString() + ext;
+
+            log.info("파일 업로드 service5 oName : " + oName);
+            log.info("파일 업로드 service6 sName : " + sName);
+
+            // DB 저장 // 기존의 사진 삭제하는 코드 추가해야함
+            Optional<User> optUser = userRepository.findById(uid);
+            if (optUser.isPresent()){
+                optUser.get().setProfile(sName);
+                userRepository.save(optUser.get());
+            }
+
+            try {
+                // mf를 path경로에 sName로 생성
+                mf.transferTo(new File(path, sName));
+                return sName;
+
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        }
+        return null;
+    }
+
+
+
+    public ResponseEntity<?> uploadProfile(MultipartFile file, String uid){
+        log.info("uploadProfile service");
+        if (!file.isEmpty()) {
+            try {
+                // 파일 저장 경로 설정
+                String uploadDir = "src/main/resources/static/images";
+                File dir = new File(uploadDir);
+                if (!dir.exists()) {
+                    dir.mkdirs();
+                }
+
+                // 파일 이름 생성
+                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+
+                // 파일 저장
+                File uploadedFile = new File(dir.getAbsolutePath() + File.separator + fileName);
+                BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(uploadedFile));
+                stream.write(file.getBytes());
+                stream.flush();
+                stream.close();
+
+                // DB 저장 // 기존의 사진 삭제하는 코드 추가해야함
+                Optional<User> optUser = userRepository.findById(uid);
+                if (optUser.isPresent()){
+                    optUser.get().setProfile(fileName);
+                    userRepository.save(optUser.get());
+                }
+
+                Map<String, Object> resultMap = new HashMap<>();
+                resultMap.put("result", fileName);
+                return ResponseEntity.ok().body(resultMap);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found");
+        }
+    }
+
+    // 프로필 사진 바이너리 코드로 변환
+    public String saveProfile(MultipartFile file, String uid){
+        // 바이너리 코드로 인코딩
+        try {
+            byte[] fileBytes = file.getBytes();
+            String encodeFile = Base64.getEncoder().encodeToString(fileBytes); //data:image/gif;base64,
+            String sName = "data:image/gif;base64," + encodeFile;
+            log.info("fileBytes : " + Arrays.toString(fileBytes));
+            log.info("encodeFile : " + encodeFile);
+            log.info("encodeFile : " + sName);
+
+            Optional<User> optUser = userRepository.findById(uid);
+            if (optUser.isPresent()){
+                optUser.get().setProfile(sName);
+                userRepository.save(optUser.get());
+            }
+            return sName;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

@@ -2,10 +2,7 @@ package kr.co.sboard.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import kr.co.sboard.config.AppInfo;
-import kr.co.sboard.dto.ArticleDTO;
-import kr.co.sboard.dto.FileDTO;
-import kr.co.sboard.dto.PageRequestDTO;
-import kr.co.sboard.dto.PageResponseDTO;
+import kr.co.sboard.dto.*;
 import kr.co.sboard.entity.Article;
 import kr.co.sboard.service.ArticleService;
 import kr.co.sboard.service.FileService;
@@ -31,51 +28,70 @@ public class ArticleController {
     private final ArticleService articleService;
     private final UserService userService;
 
-    // 게시물 조회 (10개씩)
-    // cate만 전달 - defaultLayout
-    // cate, pg 전달 - list pagination
-    // cate, condition, searchText 전달 - 검색창
-    // article/list?cate=free&condition=title&searchText=놀이터&pg=3
+    // 게시물 조회 (10개씩) (/article/view)
     @GetMapping("/article/list")
-    public String list(Model model, PageRequestDTO pageRequestDTO){
+    public String list(Model model, String cate, PageRequestDTO pageRequestDTO){
         log.info("/article/list - GET");
-        log.info(pageRequestDTO.toString());
-        // 게시판 종류별 게시물 10개씩 조회
-        PageResponseDTO pageResponseDTO = articleService.selectArticleForCate(pageRequestDTO);
-        model.addAttribute("pageResponseDTO", pageResponseDTO);
-        log.info("nickList : " + pageResponseDTO.getNickList().toString());
+
+        PageResponseDTO pageResponseDTO = null;
+
+        if (pageRequestDTO.getKeyword() == null){
+            // 일반 글 목록 조회
+            pageResponseDTO = articleService.selectArticles(pageRequestDTO);
+        }else {
+            // 검색 글 목록 조회
+            pageResponseDTO = articleService.searchArticles(pageRequestDTO);
+        }
+
+        model.addAttribute(pageResponseDTO);
+
         return "/article/list";
     }
     
     // 게시글 작성 페이지 매핑
     @GetMapping("/article/write")
-    public String write(@ModelAttribute("cate") String cate){
-        log.info("/article/write - GET");
+    public String write(Model model, String cate, PageRequestDTO pageRequestDTO){
+
+        PageResponseDTO pageResponseDTO = PageResponseDTO.builder()
+                .pageRequestDTO(pageRequestDTO)
+                .build();
+
+        model.addAttribute(pageResponseDTO);
+
         return "/article/write";
     }
 
     // 게시글 출력 1개 (/article/view)
     @GetMapping("/article/view")
-    public String view(String cate, int no, Model model){
+    public String view(int no, Model model, PageRequestDTO pageRequestDTO){
         log.info("/article/view - GET");
         // 게시글 내용 조회
         ArticleDTO article = articleService.selectArticle(no);
         // 게시글 닉네임 조회 (지워도 코드 문제 없음)
-        String articleNick = userService.selectUserForNick(article.getWriter());
+        UserDTO articleNick = userService.selectUserForNick(article.getWriter());
 
         // 댓글 조회
         List<ArticleDTO> comments = articleService.selectComment(no);
         // 댓글 닉네임 조회 (지워도 코드 문제 없음)
         List<String> commentNickList = new ArrayList<>();
+        List<String> commentProfileList = new ArrayList<>();
         for (ArticleDTO comment : comments){
-            String commentNick = userService.selectUserForNick(comment.getWriter());
-            commentNickList.add(commentNick);
+            UserDTO commentDTO = userService.selectUserForNick(comment.getWriter());
+            commentNickList.add(commentDTO.getNick());
+            commentProfileList.add(commentDTO.getProfile());
         }
+
+        // 페이징 정보
+        PageResponseDTO pageResponseDTO = PageResponseDTO.builder()
+                .pageRequestDTO(pageRequestDTO)
+                .build();
 
         model.addAttribute("article", article);
         model.addAttribute("comments", comments);
-        model.addAttribute("articleNick", articleNick);
+        model.addAttribute("articleNick", articleNick.getNick());
         model.addAttribute("commentNickList", commentNickList);
+        model.addAttribute("commentProfileList", commentProfileList);
+        model.addAttribute(pageResponseDTO);
         return "/article/view";
     }
 
