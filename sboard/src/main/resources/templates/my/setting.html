@@ -469,7 +469,6 @@
                                     formData.append('file', file);
                                     formData.append('uid', uid);
 
-
                                         fetch("/sboard/file/uploadProfile", {
                                             method: "POST",
                                             body: formData
@@ -481,12 +480,9 @@
                                             setTimeout(() => {
                                                 alert("프로필 사진을 변경했습니다.");
                                                 userProfileImg.src = data.result;
-                                            }, 0);
-                                            // 파일 업로드 성공 후 동작할 내용 추가
-                                            // 반영되는데 딜레이도 있음
+                                            }, 1000);
                                         })
                                         .catch(err => console.log(err))
-
                                 }
                             }
                         }

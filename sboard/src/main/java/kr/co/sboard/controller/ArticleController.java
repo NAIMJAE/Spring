@@ -63,22 +63,19 @@ public class ArticleController {
 
     // 게시글 출력 1개 (/article/view)
     @GetMapping("/article/view")
-    public String view(int no, Model model, PageRequestDTO pageRequestDTO){
+    public String view(Model model, String cate, int no, PageRequestDTO pageRequestDTO){
         log.info("/article/view - GET");
-        // 게시글 내용 조회
-        ArticleDTO article = articleService.selectArticle(no);
-        // 게시글 닉네임 조회 (지워도 코드 문제 없음)
-        UserDTO articleNick = userService.selectUserForNick(article.getWriter());
+        // 게시글 내용 조회 & 닉네임 조회 & 조회수 +1 // 조회수 반영 안되는듯
+        ArticleDTO article = articleService.selectArticleAndHitPlus(no);
 
         // 댓글 조회
         List<ArticleDTO> comments = articleService.selectComment(no);
-        // 댓글 닉네임 조회 (지워도 코드 문제 없음)
-        List<String> commentNickList = new ArrayList<>();
-        List<String> commentProfileList = new ArrayList<>();
-        for (ArticleDTO comment : comments){
-            UserDTO commentDTO = userService.selectUserForNick(comment.getWriter());
-            commentNickList.add(commentDTO.getNick());
-            commentProfileList.add(commentDTO.getProfile());
+
+        // 프로필 사진 조회
+        List<String> profiles = new ArrayList<>();
+        for (ArticleDTO comment : comments) {
+            String profile = articleService.selectProfile(comment.getWriter());
+            profiles.add(profile);
         }
 
         // 페이징 정보
@@ -86,11 +83,14 @@ public class ArticleController {
                 .pageRequestDTO(pageRequestDTO)
                 .build();
 
+        // 1. 현재 게시글 정보
+        // 2. 댓글 정보
+        // 3. 게시글, 댓글 닉네임
+        // 4. 프로필 사진
+
         model.addAttribute("article", article);
         model.addAttribute("comments", comments);
-        model.addAttribute("articleNick", articleNick.getNick());
-        model.addAttribute("commentNickList", commentNickList);
-        model.addAttribute("commentProfileList", commentProfileList);
+        model.addAttribute("profiles", profiles);
         model.addAttribute(pageResponseDTO);
         return "/article/view";
     }
@@ -114,7 +114,7 @@ public class ArticleController {
     @GetMapping("/article/modify")
     public String modify(int no, Model model){
         log.info("/article/modify - GET");
-        ArticleDTO article = articleService.selectArticle(no);
+        ArticleDTO article = articleService.selectArticleAndHitPlus(no); // 수정해야함 hit +1 없는걸로
         model.addAttribute("article", article);
         return "/article/modify";
     }

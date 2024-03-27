@@ -171,106 +171,50 @@ public class FileService {
         log.info("파일 삭제 service12 끝");
     }
 
-    // 프로필 사진 업로드
+    /*
+        ㅁ 게시글의 첨부파일처럼 파일 업로드 방식을 사용할 경우
+          1. 파일 업로드 방식으로 프로필 사진을 전달하면 JS로 동적인 처리시 딜레이 발생 (IntelliJ 문제)
 
-    @Value("${file.profile.path}")
-    private String profilePath;
+          2. 배포 단계에서는 resources에 접근할 수 없어 이미지 저장 불가능
 
-    public String uploadProfile2(MultipartFile mf, String uid){
+          3. 그럼 배포 단계에서 외부 디렉토리에 이미지 파일을 저장하고 외부에서 불러오는 방식 사용해야 함
 
-        // uploads 폴더 자동 생성
-        File file = new File(profilePath);
-        if(!file.exists()){
-            file.mkdir();
-        }
+        ㅁ 프로필 사진을 바이너리 코드로 변환 후 DB에 저장
+          1. file 객체의 getBytes() 메서드를 이용해 파일의 내용을 바이트 배열로 읽음
+             - 이진 데이터는 효율적인 처리를 위해 배열 구조로 구성됨
+             - "hello" => [104, 101, 108, 108, 111]
 
-        // 파일 업로드 시스템 경로 구하기
-        String path = file.getAbsolutePath();
-        log.info("파일 업로드 service2 파일 저장 시작");
+          2. encodeToString() 메서드를 이용해 Base64로 인코딩
+             - Base64 인코딩은 이진 데이터를 텍스트 형식으로 변환하는 방법 중 하나
+             - 이진 데이터는 특수문자나 제어 문자를 포함하고 있어 변환이 필요
+             - Base64는 64개의 문자로 이루어진 문자 집합을 사용하여 이진 데이터를 텍스트로 표현
 
-        // 첨부파일이 없으면 에러발생 / null 체크
+          3. 실제로 DB에 저장될 이미지 파일 문자열 생성
+             - Base64로 인코딩된 문자열에 data:image/gif;base64,를 더해 새로운 문자열 생성
+             - HTML 또는 CSS에서 바이너리 코드로 인코딩된 이미지를 불러오기 위함
+             - data:image/gif;base64, 는 인코딩된 이미지를 나타내는 데이터 URI의 시작 부분
 
-        if (!mf.isEmpty()) {
-            log.info("파일 업로드 service4 파일이 null이 아닐때");
+          4. uid로 user Entity를 조회하고 profile에 변환된 이미지 파일 문자열 update
+          
+          5. 바이너리 코드로 변환된 이미지 파일 문자열을 반환하고 JS를 통해 동적으로 이미지 생성
 
-            // oName, sName 구하기
-            String oName = mf.getOriginalFilename();
-            String ext = oName.substring(oName.lastIndexOf("."));
-            String sName = UUID.randomUUID().toString() + ext;
-
-            log.info("파일 업로드 service5 oName : " + oName);
-            log.info("파일 업로드 service6 sName : " + sName);
-
-            // DB 저장 // 기존의 사진 삭제하는 코드 추가해야함
-            Optional<User> optUser = userRepository.findById(uid);
-            if (optUser.isPresent()){
-                optUser.get().setProfile(sName);
-                userRepository.save(optUser.get());
-            }
-
-            try {
-                // mf를 path경로에 sName로 생성
-                mf.transferTo(new File(path, sName));
-                return sName;
-
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
-        }
-        return null;
-    }
-
-
-
-    public ResponseEntity<?> uploadProfile(MultipartFile file, String uid){
-        log.info("uploadProfile service");
-        if (!file.isEmpty()) {
-            try {
-                // 파일 저장 경로 설정
-                String uploadDir = "src/main/resources/static/images";
-                File dir = new File(uploadDir);
-                if (!dir.exists()) {
-                    dir.mkdirs();
-                }
-
-                // 파일 이름 생성
-                String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
-
-                // 파일 저장
-                File uploadedFile = new File(dir.getAbsolutePath() + File.separator + fileName);
-                BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(uploadedFile));
-                stream.write(file.getBytes());
-                stream.flush();
-                stream.close();
-
-                // DB 저장 // 기존의 사진 삭제하는 코드 추가해야함
-                Optional<User> optUser = userRepository.findById(uid);
-                if (optUser.isPresent()){
-                    optUser.get().setProfile(fileName);
-                    userRepository.save(optUser.get());
-                }
-
-                Map<String, Object> resultMap = new HashMap<>();
-                resultMap.put("result", fileName);
-                return ResponseEntity.ok().body(resultMap);
-            } catch (Exception e) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("not found");
-        }
-    }
-
-    // 프로필 사진 바이너리 코드로 변환
+        ㅁ 선행 작업
+          1. 이미지 파일 문자열이 저장될 칼럼의 데이터 유형을 BLOB로 설정
+             - 대체로 BLOB 유형은 이진 데이터를 저장하는데 사용되는 데이터 유형
+             - BLOB 유형은 대용량 데이터를 저장할 수 있음
+             
+          2. Entity에서도 @BLOB 어노테이션 선언
+         
+         ※ 성능이 괜찮을지 고민    
+         ※ 간단한 이미지 파일 처리를 위한 Thumbnail 라이브러리도 있다고 함 (fileupload 방식)
+     */
+    // 프로필 사진 저장
     public String saveProfile(MultipartFile file, String uid){
-        // 바이너리 코드로 인코딩
         try {
+            // 바이너리 코드로 인코딩
             byte[] fileBytes = file.getBytes();
             String encodeFile = Base64.getEncoder().encodeToString(fileBytes); //data:image/gif;base64,
             String sName = "data:image/gif;base64," + encodeFile;
-            log.info("fileBytes : " + Arrays.toString(fileBytes));
-            log.info("encodeFile : " + encodeFile);
-            log.info("encodeFile : " + sName);
 
             Optional<User> optUser = userRepository.findById(uid);
             if (optUser.isPresent()){

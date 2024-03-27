@@ -27,20 +27,12 @@
                     }
                 }
             </script>
-                <!--
-                    <h1 class="mt-4 mb-4" th:if="${pageResponseDTO.condition != null}">전체 게시글</h1>
-                    <th:block th:if="${pageResponseDTO.condition == null}">
-                        <h1 class="mt-4 mb-4" th:if="${pageResponseDTO.dtoList[0].cate == 'notice'}">공지사항</h1>
-                        <h1 class="mt-4 mb-4" th:if="${pageResponseDTO.dtoList[0].cate == 'free'}">자유게시판</h1>
-                        <h1 class="mt-4 mb-4" th:if="${pageResponseDTO.dtoList[0].cate == 'faq'}">자주묻는질문</h1>
-                        <h1 class="mt-4 mb-4" th:if="${pageResponseDTO.dtoList[0].cate == 'qna'}">묻고답하기</h1>
-                    </th:block>
-                -->
+            <h3 class="mt-4 mb-4">[[${boardName}]] 게시판</h3>
 
             <div class="card mb-4">
                 <div class="card-header">
                     <i class="fas fa-table me-1"></i>
-                    게시글 목록
+                    [[${boardName}]] 목록
                 </div>
                 <div class="card-body">
                     <table id="datatablesSimple" class="table table-hover">
@@ -58,8 +50,8 @@
                             <tr th:each="article, index : ${pageResponseDTO.dtoList}"><!---->
                                 <td class="col-1" th:text="${pageResponseDTO.startNo - index.index}"></td>
                                 <td class="tdTitle">
-                                    <a class="text-dark text-decoration-none"  style="font-weight: bold" th:if="${pageResponseDTO.keyword == null}" th:href="@{/article/write(no=${article.no}, cate=${pageResponseDTO.cate}, pg=${pageResponseDTO.pg})}">[[${article.title}]]</a>
-                                    <a class="text-dark text-decoration-none"  style="font-weight: bold" th:if="${pageResponseDTO.keyword != null}" th:href="@{/article/write(no=${article.no}, cate=${pageResponseDTO.cate}, type=${pageResponseDTO.type}, keyword=${pageResponseDTO.keyword}, pg=${pageResponseDTO.pg})}">
+                                    <a class="text-dark text-decoration-none"  style="font-weight: bold" th:if="${pageResponseDTO.keyword == null}" th:href="@{/article/view(no=${article.no}, cate=${pageResponseDTO.cate}, pg=${pageResponseDTO.pg})}">[[${article.title}]]</a>
+                                    <a class="text-dark text-decoration-none"  style="font-weight: bold" th:if="${pageResponseDTO.keyword != null}" th:href="@{/article/view(no=${article.no}, cate=${pageResponseDTO.cate}, type=${pageResponseDTO.type}, keyword=${pageResponseDTO.keyword}, pg=${pageResponseDTO.pg})}">
                                         [[${article.title}]]</a>
                                     <span class="badge text-bg-light border-bottom rounded-pill" th:text="${article.comment}"></span>
                                 </td>

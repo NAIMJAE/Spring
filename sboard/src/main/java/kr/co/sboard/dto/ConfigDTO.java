@@ -14,6 +14,6 @@ public class ConfigDTO {
     private String cate;
     private String boardName;
     private String admin;
-    private String total;
+    private int total;
     private LocalDateTime createDate;
 }

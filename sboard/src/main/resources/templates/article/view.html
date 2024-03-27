@@ -203,7 +203,7 @@
                     }
                 }
             </script>
-
+            <!-- 수정해야함 -->
             <h1 class="mt-4 mb-4" th:if="${article.cate == 'notice'}">공지사항</h1>
             <h1 class="mt-4 mb-4" th:if="${article.cate == 'free'}">자유게시판</h1>
             <h1 class="mt-4 mb-4" th:if="${article.cate == 'faq'}">자주묻는질문</h1>
@@ -227,7 +227,7 @@
                             <td class="col-3" style="text-align: right">[[${#temporals.format(article.rdate, 'yyyy-MM-dd HH:mm')}]]</td>
                         </tr>
                         <tr>
-                            <td>작성자 : [[${articleNick}]]</td>
+                            <td>작성자 : [[${article.nick}]]</td>
                             <td class="col-3" style="text-align: right">조회수 : [[${article.hit}]]</td>
                         </tr>
                         </tbody>
@@ -304,12 +304,12 @@
                         <li class="list-group-item d-flex justify-content-between align-items-start" th:each="comment, index : ${comments}">
 
                             <div class="ms-0">
-                                <img class="p-2 mb-md-0 img-fluid" style="width: 85px; height: 85px" th:src="@{/images/} + ${commentProfileList[index.index]}" alt="프로필사진"/>
+                                <img class="p-2 mb-md-0 img-fluid" id="userProfileImg" style="width: 200px; height: 200px" th:src="${profiles[index.index]}" alt="프로필사진"/>
                             </div>
 
                             <div class="ms-2 me-auto col-sm-9">
                                 <div class="fw-bold nameDate">
-                                    <span class="text-dark commentNick">[[${commentNickList[index.index]}]]&nbsp;&nbsp;</span>
+                                    <span class="text-dark commentNick">[[${comment.nick}]]&nbsp;&nbsp;</span>
                                     <span class="text-secondary small commentDate">[[${#temporals.format(comment.rdate, 'yyyy-MM-dd HH:mm')}]]</span>
                                 </div>
                                 <textarea class="col-sm-12 mt-1 border-0" name="content" style="outline: none; resize: none;" readonly>[[${comment.content}]]</textarea>

@@ -96,4 +96,29 @@ public class ArticleRepositoryImpl implements ArticleRepositoryCustom {
         return new PageImpl<>(content, pageable, total);
     }
 
+    @Override
+    public Article selectArticleAndHitPlus(int no) {
+        // select * from article where no = ?
+        Article article = jpaQueryFactory
+                            .selectFrom(qArticle)
+                            .where(qArticle.no.eq(no))
+                            .fetchOne();
+        // update article set hit =+ 1 where no = ?
+        jpaQueryFactory
+                .update(qArticle)
+                .set(qArticle.hit, qArticle.hit.add(1))
+                .where(qArticle.no.eq(no));
+
+        return article;
+    }
+    @Override
+    public List<Article> selectComment(int parent){
+        // select * from article where parent = ?
+        List<Article> article = jpaQueryFactory
+                            .selectFrom(qArticle)
+                            .where(qArticle.parent.eq(parent))
+                            .fetch();
+        return article;
+    }
+
 }

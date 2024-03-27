@@ -63,18 +63,10 @@ public class ArticleService {
     }
 
     // 게시물 조회 (/article/view) && 조회수 +1
-    public ArticleDTO selectArticle(int no){
-        Optional<Article> optArticle = articleRepository.findById(no);
+    public ArticleDTO selectArticleAndHitPlus(int no){
+        Article article = articleRepository.selectArticleAndHitPlus(no);
 
-        ArticleDTO articleDTO = null;
-        if(optArticle.isPresent()){
-            Article article = optArticle.get();
-            article.setHit(article.getHit()+1);
-
-            Article resultArticle = articleRepository.save(article);
-            articleDTO = modelMapper.map(resultArticle, ArticleDTO.class);
-        }
-        return articleDTO;
+        return modelMapper.map(article, ArticleDTO.class);
     }
 
     // 게시판별 게시글 조회 ///////////////////////////////////////////////////////////
@@ -211,7 +203,7 @@ public class ArticleService {
     }
     // 댓글 조회
     public List<ArticleDTO> selectComment(int no){
-        List<Article> articles = articleRepository.findByParent(no);
+        List<Article> articles = articleRepository.selectComment(no);
         log.info("articles : " + articles);
         List<ArticleDTO> articleDTOs = new ArrayList<>();
         for(Article article : articles) {
@@ -267,6 +259,10 @@ public class ArticleService {
         }
     }
 
+    // view 페이지 프로필 사진 조회
+    public String selectProfile(String uid){
+        return userRepository.selectProfile(uid);
+    }
 
 
 

@@ -41,16 +41,9 @@ public class FileController {
     // 프로필 사진 업로드
     @PostMapping("/file/uploadProfile")
     public ResponseEntity<?> uploadProfile(@RequestParam("file") MultipartFile file, @RequestParam("uid") String uid) {
-        log.info("uploadProfile...1");
-        //return fileService.uploadProfile(file, uid);
-
-
         String sName = fileService.saveProfile(file, uid);
-        log.info("uploadProfile...2 : " + sName);
         Map<String, String> resultMap = new HashMap<>();
         resultMap.put("result", sName);
         return ResponseEntity.ok().body(resultMap);
-
     }
-
 }
