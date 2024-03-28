@@ -1,0 +1,108 @@
+<html xmlns:th="http://www.thymeleaf.org"
+    xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+    layout:decorate="~{/layout/defaultLayout.html}">
+    <!--내용 시작-->
+        <div class="container-fluid px-4" layout:fragment="content">
+
+            <script th:inline="javascript">
+                window.onload = function (){
+                    const form = document.formWrite;
+                    const btnSubmit = document.getElementById('btnSubmit');
+                    const btnClose = document.getElementsByClassName('btn-close');
+                    const fileInput = document.getElementById('formFileMultiple');
+                    const fileValue = form.file.value;
+
+                    // 첨부파일 삭제
+                    let deleteList = []; // 삭제할 파일 번호 저장해두는 배열
+                    for (const close of btnClose){
+                        close.onclick = function(){
+                            const result = confirm("첨부파일을 삭제하시겠습니까?");
+                            if(result){
+                                const li = this.parentElement;
+                                const fno = this.dataset.fno;
+                                console.log("fno : " + fno);
+                                deleteList.push(fno);
+                                console.log("deleteList : " + deleteList);
+                                li.remove();
+                            }
+                        }
+                    }
+
+                    // 게시글 수정 하기
+                    btnSubmit.onclick = function (e){
+                        e.preventDefault();
+                        const result = confirm("수정된 사항을 저장하시겠습니까?")
+                        if (result){
+                            console.log("기존 파일 수 : " + fileValue);
+                            console.log("삭제 파일 수 : " + deleteList.length);
+                            console.log("추가 파일 수 : " + fileInput.files.length);
+                            // 파일 갯수
+                            const count = fileValue - deleteList.length + fileInput.files.length;
+                            console.log("최종 파일 수 : " + count);
+                            form.file.value = count;
+
+                            // 파일 삭제
+                            if(deleteList != null){
+                                for (const fno of deleteList){
+                                    fetch(`/sboard/file/delete/${fno}`)
+                                        .then(response => response.json())
+                                        .then(date => {
+                                            console.log(data);
+                                        })
+                                        .catch(err => console.log(err))
+                                }
+                            }
+                            // 폼 전송
+                            document.formWrite.submit();
+                        }
+                    }
+                }
+            </script>
+
+            <h1 class="mt-4 mb-4">게시글 수정</h1>
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-table me-1"></i>
+                    게시글 번호 : [[${article.no}]]
+                </div>
+                <div class="card-body">
+
+            <!--글쓰기-->
+                    <form name="formWrite" th:action="@{/article/modify}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="no" th:value="${article.no}">
+                        <input type="hidden" name="writer" th:value="${#authentication.principal.user.uid}">
+                        <input type="hidden" name="cate" th:value="${article.cate}">
+                        <input type="hidden" name="file" th:value="${article.file}">
+                        <input type="hidden" name="hit" th:value="${article.hit}">
+                        <input type="hidden" name="pg" th:value="${pageResponseDTO.pg}">
+                        <div class="mb-3">
+                            <label for="exampleFormControlInput1" class="form-label">■ 제목</label>
+                            <input type="text" class="form-control" name="title" id="exampleFormControlInput1" th:value="${article.title}">
+                        </div>
+                        <div class="mb-3">
+                            <label for="exampleFormControlTextarea1" class="form-label">■ 내용</label>
+                            <textarea class="form-control" name="content" id="exampleFormControlTextarea1" rows="10">[[${article.content}]]</textarea>
+                        </div>
+                <!--기존 첨부 파일-->
+                        <ul class="list-group" th:if="${article.file > 0}">
+                            <label class="form-label">■ 기존 첨부 파일</label>
+                            <li class="list-group-item d-flex justify-content-between align-items-center" th:each="file : ${article.fileList}">
+                                <p th:href="@{/article/fileDownload(fno=${file.fno})}" class="m-0" th:text="${file.oName}"></p>
+                                <button type="button" class="btn-close" aria-label="Close" th:data-fno="${file.fno}"></button>
+                            </li>
+                        </ul>
+                <!--파일 첨부-->
+                        <div class="mb-3 mt-3">
+                            <label for="formFileMultiple" class="form-label">■ 새 첨부 파일 선택</label>
+                            <input class="form-control" type="file" name="files" id="formFileMultiple" multiple>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="text-end">
+                <a th:href="@{/article/view(cate=${article.cate}, no=${article.no})}" class="btn btn-secondary btn-sm">취소</a>
+                <a th:href="@{/article/write}" class="btn btn-success btn-sm" id="btnSubmit">글수정</a>
+            </div>
+        </div>
+    <!--내용 끝-->
+</html>
