@@ -1,0 +1,811 @@
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{/layout/defaultLayout}">
+    <!--
+        - http://localhost:8080/sboard/my/setting
+        - 회원정보 수정 및 탈퇴 기능
+        - 회원탈퇴는 해당 사용자의 아이디만 남기고 모두 컬럼의 값을 null 업데이트
+    -->
+    <div class="container text-center px-4" layout:fragment="content">
+        <div class="row justify-content-md-center">
+            <!-- 내용 시작 -->
+            <div class="col-md-8">
+                <h3 class="mt-4 mb-4" id="userName">[[${user.name}]] 회원님</h3>
+
+                <div class="card mb-5" id="checkUser">
+                    <div class="card-body text-center">
+                        <h4 class="card-title">회원 정보 확인</h4>
+                        <h5 class="card-text pt-2 pb-2">개인 정보 보호를 위해 비밀번호를 입력해주세요.</h5>
+                        <input class="w-25 p-1" type="hidden" id="CheckUid" th:value="${user.uid}">
+                        <input class="w-25 p-1" type="password" name="inputCheckPass" id="inputCheckPass">
+                        <button href="#" class="btn btn-primary ms-2" id="btnCheckPass">확인</button>
+                    </div>
+                </div>
+                <!--가려두기-->
+                <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+                <script>
+                    window.onload = function () {
+                        const rePass = /^(?=.*[a-zA-z])(?=.*[0-9])(?=.*[$`~!@$!%*#^?&\\(\\)\-_=+]).{5,16}$/;
+                        const reNick = /^[a-zA-Zㄱ-힣0-9][a-zA-Zㄱ-힣0-9]{3,10}$/;
+                        const reEmail = /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
+                        const reHp = /^01(?:0|1|[6-9])-(?:\d{4})-\d{4}$/;
+
+                        const inputCheckPass = document.getElementById('inputCheckPass');
+                        const btnCheckPass = document.getElementById('btnCheckPass');
+                        const userName = document.getElementById('userName');
+                        const CheckUid = document.getElementById('CheckUid');
+                        const checkUser = document.getElementById('checkUser');
+                        const privateInfo = document.getElementById('privateInfo');
+
+                        const UserUid = document.getElementById('UserUid');
+                        const userNick = document.getElementById('userNick');
+                        const userEmail = document.getElementById('userEmail');
+                        const userHp = document.getElementById('userHp');
+                        const userZip = document.getElementById('userZip');
+                        const userAddr1 = document.getElementById('userAddr1');
+                        const userAddr2 = document.getElementById('userAddr2');
+
+                        const changePassBox = document.getElementById('changePassBox');
+                        const changeNickBox = document.getElementById('changeNickBox');
+                        const changeEmailBox = document.getElementById('changeEmailBox');
+                        const changeHpBox = document.getElementById('changeHpBox');
+                        const changeAddrBox = document.getElementById('changeAddrBox');
+
+                        const inputPass = document.getElementById('inputPass');
+                        const inputPass2 = document.getElementById('inputPass2');
+                        const inputNick = document.getElementById('inputNick');
+                        const inputEmail = document.getElementById('inputEmail');
+                        const inputCode = document.getElementById('inputCode');
+                        const inputHp = document.getElementById('inputHp');
+                        const inputZip = document.getElementById('inputZip');
+                        const inputAddr1 = document.getElementById('inputAddr1');
+                        const inputAddr2 = document.getElementById('inputAddr2');
+
+                        const btnChangePass = document.getElementById('btnChangePass');
+                        const btnChangeNick = document.getElementById('btnChangeNick');
+                        const btnChangeEmail = document.getElementById('btnChangeEmail');
+                        const btnChangeHp = document.getElementById('btnChangeHp');
+                        const btnChangeAddr = document.getElementById('btnChangeAddr');
+
+                        const btnSavePass = document.getElementById('btnSavePass');
+                        const btnSaveNick = document.getElementById('btnSaveNick');
+                        const btnSaveHp = document.getElementById('btnSaveHp');
+                        const btnSaveAddr = document.getElementById('btnSaveAddr');
+
+                        const btnSendCode = document.getElementById('btnSendEmail');
+                        const btnCheckCode = document.getElementById('btnCheckCode');
+
+                        const btnUserDelete = document.getElementById('btnUserDelete');
+
+                        // 우편번호 주소검색
+                        // 다음 우편번호 API 스크립트 상단 추가, postcode 함수 util.js 파일 추가
+                        inputZip.onclick = function () {
+                            postcode();
+                        }
+
+                        // 비밀번호 인증 통과시 개인정보창 표시
+                        btnCheckPass.onclick = function () {
+                            const uid = CheckUid.value;
+                            const name = userName.innerText;
+                            const pass = inputCheckPass.value;
+                            const jsonData = {
+                                "uid": uid,
+                                "name": name,
+                                "pass": pass
+                            }
+                            fetch("/sboard/my/checkUser", {
+                                method: "POST",
+                                headers: {"content-Type": "application/json"},
+                                body: JSON.stringify(jsonData)
+                            })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.result) {
+                                        // 성공 - 개인정보창 표시
+                                        privateInfo.style.display = "block";
+                                        checkUser.style.display = "none";
+                                    } else {
+                                        //실패
+                                        inputCheckPass.innerText = "";
+                                        alert("비밀번호가 일치하지 않습니다..");
+                                    }
+                                })
+                                .catch(err => console.log(err))
+                        }
+
+                        // 비밀 번호 변경
+                        btnChangePass.onclick = function () {
+                            if (changePassBox.style.display === "none") {
+                                changePassBox.style.display = "block";
+                                btnChangePass.querySelector("span").innerText = "\u00A0 변경 취소 \u00A0";
+                            } else {
+                                changePassBox.style.display = "none";
+                                btnChangePass.querySelector("span").innerText = "비밀번호 변경";
+                            }
+                        }
+                        btnSavePass.onclick = function () {
+                            const pass = inputPass.value;
+                            const pass2 = inputPass2.value;
+
+                            if (pass === pass2) {
+                                // 유효성 검사
+                                if (pass.match(rePass)) {
+                                    // 저장
+                                    const result = confirm("비밀번호를 변경하시겠습니까?");
+                                    if (result) {
+                                        const uid = UserUid.innerText;
+                                        const jsonData = {
+                                            "uid": uid,
+                                            "pass": pass
+                                        }
+                                        fetch("/sboard/my/changPass", {
+                                            method: "POST",
+                                            headers: {"content-Type": "application/json"},
+                                            body: JSON.stringify(jsonData)
+                                        })
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.result != null) {
+                                                    // 성공 - 개인정보창 표시
+                                                    alert("비밀번호가 변경되었습니다.")
+                                                    changePassBox.style.display = "none";
+                                                    btnChangePass.querySelector("span").innerText = "비밀번호 변경"
+                                                } else {
+                                                    //실패
+                                                    alert("다시 시도해주세요.");
+                                                }
+                                            })
+                                            .catch(err => console.log(err))
+                                    }
+                                } else {
+                                    alert("사용할 수 없는 비밀번호 형식입니다.\n5자이상 16자 이하 \n영문 + 숫자 + 특수문자 조합");
+                                }
+                            } else {
+                                alert("비밀번호가 일치하지 않습니다.");
+                            }
+                        }
+
+                        // 닉네임 변경
+                        btnChangeNick.onclick = function () {
+                            if (changeNickBox.style.display === "none") {
+                                changeNickBox.style.display = "block";
+                                btnChangeNick.querySelector("span").innerText = "변경 취소";
+                            } else {
+                                changeNickBox.style.display = "none";
+                                btnChangeNick.querySelector("span").innerText = "닉네임 변경";
+                            }
+                        }
+                        btnSaveNick.onclick = async function () {
+                            const nick = inputNick.value;
+                            const type = 'nick';
+
+                            // 유효성 검사
+                            if (nick.match(reNick)) {
+                                // 중복 체크
+                                const data = await fetchData(`/sboard/userCheck/${type}/${nick}`);
+                                console.log(data);
+                                console.log(data.result);
+                                if (data.result < 1) {
+                                    // 저장
+                                    const result = confirm("사용가능한 닉네임입니다.\n닉네임을 변경하시겠습니까?");
+                                    if (result) {
+                                        const uid = UserUid.innerText;
+                                        const jsonData = {
+                                            "uid": uid,
+                                            "nick": nick
+                                        }
+                                        fetch("/sboard/my/changeNick", {
+                                            method: "POST",
+                                            headers: {"content-Type": "application/json"},
+                                            body: JSON.stringify(jsonData)
+                                        })
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.result != null) {
+                                                    // 성공 - 개인정보창 표시
+                                                    alert("닉네임이 변경되었습니다.")
+                                                    changeNickBox.style.display = "none";
+                                                    btnChangeNick.querySelector("span").innerText = "닉네임 변경"
+                                                    userNick.innerText = `${nick}`;
+                                                    inputNick.innerText = "";
+                                                } else {
+                                                    //실패
+                                                    alert("다시 시도해주세요.");
+                                                }
+                                            })
+                                            .catch(err => console.log(err))
+                                    }
+                                } else {
+                                    alert("이미 사용중인 닉네임입니다.")
+                                }
+                            } else {
+                                alert("사용할 수 없는 닉네임 형식입니다.\n3자이상 10자 이하 \n특수문자 사용 불가");
+                            }
+                        }
+
+                        // 연락처 변경
+                        btnChangeHp.onclick = function () {
+                            if (changeHpBox.style.display === "none") {
+                                changeHpBox.style.display = "block";
+                                btnChangeHp.querySelector("span").innerText = "변경 취소";
+                            } else {
+                                changeHpBox.style.display = "none";
+                                btnChangeHp.querySelector("span").innerText = "연락처 변경";
+                            }
+                        }
+                        btnSaveHp.onclick = async function () {
+                            const hp = inputHp.value;
+                            const type = 'hp';
+
+                            // 유효성 검사
+                            if (hp.match(reHp)) {
+                                // 중복 체크
+                                const data = await fetchData(`/sboard/userCheck/${type}/${hp}`);
+                                console.log(data);
+                                console.log(data.result);
+                                if (data.result < 1) {
+                                    // 저장
+                                    const result = confirm("사용가능한 전화번호입니다.\n전화번호를 변경하시겠습니까?");
+                                    if (result) {
+                                        const uid = UserUid.innerText;
+                                        const jsonData = {
+                                            "uid": uid,
+                                            "hp": hp
+                                        }
+                                        fetch("/sboard/my/changeHp", {
+                                            method: "POST",
+                                            headers: {"content-Type": "application/json"},
+                                            body: JSON.stringify(jsonData)
+                                        })
+                                            .then(response => response.json())
+                                            .then(data => {
+                                                if (data.result != null) {
+                                                    // 성공 - 개인정보창 표시
+                                                    alert("전화번호가 변경되었습니다.")
+                                                    changeHpBox.style.display = "none";
+                                                    btnChangeHp.querySelector("span").innerText = "연락처 변경"
+                                                    userHp.innerText = `${hp}`;
+                                                    inputHp.innerText = "";
+                                                } else {
+                                                    //실패
+                                                    alert("다시 시도해주세요.");
+                                                }
+                                            })
+                                            .catch(err => console.log(err))
+                                    }
+                                } else {
+                                    alert("이미 사용중인 전화번호입니다.")
+                                }
+                            } else {
+                                alert("사용할 수 없는 전화번호 형식입니다.");
+                            }
+                        }
+
+                        // 이메일 변경
+                        btnChangeEmail.onclick = function () {
+                            if (changeEmailBox.style.display === "none") {
+                                changeEmailBox.style.display = "block";
+                                btnChangeEmail.querySelector("span").innerText = "변경 취소";
+                            } else {
+                                changeEmailBox.style.display = "none";
+                                btnChangeEmail.querySelector("span").innerText = "이메일 변경";
+                            }
+                        }
+                        btnSendCode.onclick = async function () {
+                            const email = inputEmail.value;
+                            const type = 'email';
+
+                            // 유효성 검사
+                            if (email.match(reEmail)) {
+                                // 중복 체크
+                                const data = await fetchData(`/sboard/userCheck/${type}/${email}`);
+                                if (data.result < 1) {
+                                    alert("이메일 인증코드가 전송되었습니다.");
+
+                                } else {
+                                    alert("이미 사용중인 이메일입니다.");
+                                }
+                            } else {
+                                alert("사용할 수 없는 이메일 형식입니다.");
+                            }
+                        }
+
+                        // 이메일 인증코드 확인
+                        btnCheckCode.onclick = async function () {
+                            const data = await fetchData(`/sboard/email/${inputCode.value}`);
+                            if (!data.result) {
+                                alert("인증코드가 일치하지 않습니다.");
+                            } else {
+                                const result = confirm("사용가능한 이메일입니다. \n 이메일을 변경하시겠습니까?");
+                                if (result) {
+                                    // 저장
+                                    const uid = UserUid.innerText;
+                                    const email = inputEmail.value;
+                                    const jsonData = {
+                                        "uid": uid,
+                                        "email": email
+                                    }
+                                    fetch("/sboard/my/changeEmail", {
+                                        method: "POST",
+                                        headers: {"content-Type": "application/json"},
+                                        body: JSON.stringify(jsonData)
+                                    })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.result != null) {
+                                                // 성공 - 개인정보창 표시
+                                                alert("이메일이 변경되었습니다.")
+                                                changeEmailBox.style.display = "none";
+                                                btnChangeEmail.querySelector("span").innerText = "이메일 변경"
+                                                userEmail.innerText = `${email}`;
+                                                inputEmail.innerText = "";
+                                                inputCode.innerText = "";
+                                            } else {
+                                                //실패
+                                                alert("다시 시도해주세요.");
+                                            }
+                                        })
+                                        .catch(err => console.log(err))
+                                }
+                            }
+                        }
+
+                        // 주소 변경
+                        btnChangeAddr.onclick = function () {
+                            if (changeAddrBox.style.display === "none") {
+                                changeAddrBox.style.display = "block";
+                                btnChangeAddr.querySelector("span").innerText = "변경 취소";
+                            } else {
+                                changeAddrBox.style.display = "none";
+                                btnChangeAddr.querySelector("span").innerText = "주소 변경";
+                            }
+                        }
+                        btnSaveAddr.onclick = function () {
+                            const zip = inputZip.value;
+                            const addr1 = inputAddr1.value;
+                            const addr2 = inputAddr2.value;
+                            console.log(zip);
+                            console.log(addr1);
+                            console.log(addr2);
+
+                            if (zip != "" && addr1 != "" && addr2 != "") {
+                                const result = confirm("주소를 변경하시겠습니까?");
+                                if (result) {
+                                    const uid = UserUid.innerText;
+                                    const jsonData = {
+                                        "uid": uid,
+                                        "zip": zip,
+                                        "addr1": addr1,
+                                        "addr2": addr2
+                                    }
+                                    fetch("/sboard/my/changeAddr", {
+                                        method: "POST",
+                                        headers: {"content-Type": "application/json"},
+                                        body: JSON.stringify(jsonData)
+                                    })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.result != null) {
+                                                // 성공
+                                                alert("주소가 변경되었습니다.")
+                                                changeAddrBox.style.display = "none";
+                                                btnChangeAddr.querySelector("span").innerText = "주소 변경"
+                                                userZip.innerText = `${zip}`;
+                                                userAddr1.innerText = `${addr1}`;
+                                                userAddr2.innerText = `${addr2}`;
+                                                inputZip.innerText = "";
+                                                inputAddr1.innerText = "";
+                                                inputAddr2.innerText = "";
+                                            } else {
+                                                //실패
+                                                alert("다시 시도해주세요.");
+                                            }
+                                        })
+                                        .catch(err => console.log(err))
+                                }
+                            } else {
+                                alert("주소를 입력해주세요.");
+                            }
+                        }
+
+                        // 회원 탈퇴
+                        btnUserDelete.onclick = function () {
+                            const pass = prompt("회원 탈퇴를 위해 비밀번호를 입력해주세요.");// 모달 만들어야함
+                            const result = confirm("정말 탈퇴하시겠습니까?");
+                            if (result) {
+                                const uid = CheckUid.value;
+                                const jsonData = {
+                                    "uid": uid,
+                                    "pass": pass
+                                }
+                                fetch("/sboard/my/checkUser", {
+                                    method: "POST",
+                                    headers: {"content-Type": "application/json"},
+                                    body: JSON.stringify(jsonData)
+                                })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        if (data.result) {
+                                            // 성공
+                                            fetch(`/sboard/my/deleteUser/${uid}`)
+                                                .then(response => response.json())
+                                                .then(data => {
+                                                    if (data.result != null) {
+                                                        alert("회원탈퇴에 성공했습니다.");
+                                                        window.location.href = '/sboard/user/logout';
+                                                    } else {
+                                                        alert("회원탈퇴에 실패했습니다.")
+                                                    }
+                                                })
+                                                .catch(err => console.log(err))
+                                        } else {
+                                            //실패
+                                            alert("비밀번호가 일치하지 않습니다.");
+                                        }
+                                    })
+                                    .catch(err => console.log(err))
+                            }
+                        }
+                        // 버튼 색 구분하기
+
+                        // 사진 변경
+                        const btnChangeImg = document.getElementById('btnChangeImg');
+                        const profileImg = document.getElementById('profileImg');
+                        const userProfileImg = document.getElementById('userProfileImg');
+                        const userImgDiv = document.getElementById('userImgDiv');
+                        const btnChangeDefaultImg = document.getElementById('btnChangeDefaultImg');
+
+                        btnChangeImg.onclick = function (){
+                            const file = profileImg.files[0];
+
+                            if (file == null) {
+                                alert("파일을 선택해주세요.");
+                                return;
+                            }else{
+                                const result = confirm("선택하신 사진으로 변경하시겠습니까?");
+                                if(result){
+                                    const uid = CheckUid.value;
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    formData.append('uid', uid);
+
+                                    fetch("/sboard/file/uploadProfile", {
+                                        method: "POST",
+                                        body: formData
+                                    })
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            console.log(data.result);
+
+                                            setTimeout(() => {
+                                                alert("프로필 사진을 변경했습니다.");
+                                                userProfileImg.src = data.result;
+                                            }, 1000);
+                                        })
+                                        .catch(err => console.log(err))
+                                }
+                            }
+                        }
+
+                        btnChangeDefaultImg.onclick = function () {
+                            const result = confirm("기본 프로필 사진으로 변경하시겠습니까?");
+
+                            if (result) {
+                                const uid = CheckUid.value;
+                                fetch(`/sboard/file/removeProfile/${uid}`)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        console.log(data.result);
+                                        setTimeout(() => {
+                                            alert("프로필 사진을 변경했습니다.");
+                                            userProfileImg.src = "/sboard/images/user.PNG";
+                                        }, 1000);
+                                    })
+                                    .catch(err => console.log(err))
+                            }
+                        }
+                    }
+                </script>
+
+                <div id="privateInfo" style="display: block">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <i class="fas fa-table me-1"></i>
+                            개인정보
+                        </div>
+                        <div class="card-body">
+                            <form name="form">
+                                <!--프로필 사진-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-6">
+                                        <div id="userImgDiv">
+                                            <img th:if="${user.profile} == null" class="p-2 mb-md-0 img-fluid" id="userProfileImg" style="width: 200px; height: 200px" th:src="@{/images/user.PNG}" alt="프로필사진"/>
+                                            <img th:if="${user.profile} != null" class="p-2 mb-md-0 img-fluid" id="userProfileImg" style="width: 200px; height: 200px" th:src="${user.profile}" alt="프로필사진"/>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <input class="border-bottom" type="file" name="file" accept="image/*" id="profileImg">
+                                            <p class="text-start ps-3 mt-2">권장 크기 : 200px * 200px<br>확장자 : png, jpg<br>댓글 작성시 사용됨</p>
+                                            <div class="col-md-12">
+                                                <div class="mb-3 mb-md-0 mt-2 d-inline-block">
+                                                    <button class="btn btn-outline-success p-2" type="button" id="btnChangeImg">
+                                                        <span role="status">프로필 사진 변경</span>
+                                                    </button>
+                                                </div>
+                                                <div class="mb-3 mb-md-0 mt-2 d-inline-block">
+                                                    <button class="btn btn-outline-secondary p-2" type="button" id="btnChangeDefaultImg">
+                                                        <span role="status">프로필 사진 제거</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <!--
+                                                이 div를 form으로 만들어서 multipart/form-data로 file 전송하기
+                                                service에서 파일 저장 and DB 저장
+                                                바뀐 프로필 사진 동적으로 처리해서 보여주기
+                                            -->
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--아이디-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-3 p-3">
+                                        아이디
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p class="p-2 mb-md-0 mt-2" id="UserUid">[[${user.uid}]]</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <button class="btn btn-outline-secondary p-2 ps-1" type="button" id="btnChangePass" name="btnChangePass">
+                                                <span role="status">비밀번호 변경</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--비밀번호 변경-->
+                                <div id="changePassBox" style="display: none">
+                                    <div class="row p-2 pb-0 bg-light">
+                                        <div class="col-md-3 pt-3 pb-3">
+                                            비밀번호 변경
+                                        </div>
+                                        <div class="col-md-5">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <input class="form-control p-2" type="password" id="inputPass" name="inputPass" placeholder="비밀번호 입력"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                        </div>
+                                    </div>
+
+                                    <div class="row p-2 pt-0 border-bottom bg-light">
+                                        <div class="col-md-3 p-0 pt-3 pb-3">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <input class="form-control p-2" type="password" id="inputPass2" name="inputPass2" placeholder="비밀번호 확인"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <button class="btn btn-success p-2" type="button" id="btnSavePass" name="btnSavePass">
+                                                    <span role="status">비밀번호 변경</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--가입일-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-3 p-3">
+                                        가입일
+                                    </div>
+                                    <div class="col-md-5 p-3">
+                                        [[${#temporals.format(user.rdate, 'yyyy-MM-dd HH:mm')}]]
+                                    </div>
+                                    <div class="col-md-4 p-3">
+                                    </div>
+                                </div>
+                                <!--이름-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-3 p-3">
+                                        이름
+                                    </div>
+                                    <div class="col-md-5 p-3">
+                                        [[${user.name}]]
+                                    </div>
+                                    <div class="col-md-4 p-3">
+                                    </div>
+                                </div>
+                                <!--닉네임-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-3 p-3">
+                                        닉네임
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p class="p-2 mb-md-0 mt-2" id="userNick">[[${user.nick}]]</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <button class="btn btn-outline-secondary p-2" type="button" id="btnChangeNick" name="btnChangeNick">
+                                                <span role="status">닉네임 변경</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--닉네임 변경-->
+                                <div id="changeNickBox" style="display: none">
+                                    <div class="row p-2 border-bottom bg-light" >
+                                        <div class="col-md-3 pt-3 pb-3">
+                                            닉네임 변경
+                                        </div>
+                                        <div class="col-md-5">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <input class="form-control p-2" type="text" id="inputNick" name="inputNick" placeholder="닉네임 입력"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <button class="btn btn-success p-2" type="button" id="btnSaveNick" name="btnSaveNick">
+                                                    <span role="status">닉네임 변경</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--이메일-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-3 p-3">
+                                        이메일
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p class="p-2 mb-md-0 mt-2" id="userEmail">[[${user.email}]]</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <button class="btn btn-outline-secondary p-2" type="button" id="btnChangeEmail" name="btnChangeEmail">
+                                                <span role="status">이메일 변경</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--이메일 변경-->
+                                <div id="changeEmailBox" style="display: none">
+                                    <div class="row p-2 pb-0 bg-light">
+                                        <div class="col-md-3 pt-3 pb-3">
+                                            이메일 변경
+                                        </div>
+                                        <div class="col-md-5">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <input class="form-control p-2" type="text" id="inputEmail" name="inputEmail" placeholder="이메일 입력"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <button class="btn btn-success p-2" type="button" id="btnSendEmail" name="btnSendEmail">
+                                                    <span role="status">인증번호 전송</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row p-2 pt-0 border-bottom bg-light">
+                                        <div class="col-md-3 p-0 pt-3 pb-3">
+                                        </div>
+                                        <div class="col-md-5">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <input class="form-control p-2 " type="text" id="inputCode" name="inputCode" placeholder="인증번호 입력"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <button class="btn btn-success p-2" type="button" id="btnCheckCode" name="btnCheckCode">
+                                                    <span role="status">인증코드 확인</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--연락처-->
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-3 p-3">
+                                        연락처
+                                    </div>
+                                    <div class="col-md-5">
+                                        <p class="p-2 mb-md-0 mt-2" id="userHp">[[${user.hp}]]</p>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3 mb-md-0 mt-2">
+                                            <button class="btn btn-outline-secondary p-2" type="button" id="btnChangeHp" name="btnChangeHp">
+                                                <span role="status">연락처 변경</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--연락처 변경-->
+                                <div id="changeHpBox" style="display: none">
+                                    <div class="row p-2 border-bottom bg-light">
+                                        <div class="col-md-3 pt-3 pb-3">
+                                            연락처 변경
+                                        </div>
+                                        <div class="col-md-5">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <input class="form-control p-2" type="text" id="inputHp" name="inputHp" placeholder="연락처 입력"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3 mb-md-0 mt-2">
+                                                <button class="btn btn-success p-2" type="button" id="btnSaveHp" name="btnSaveHp">
+                                                    <span role="status">연락처 변경</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!--주소-->
+                                <div class="row p-2 pb-0">
+                                    <div class="col-md-3 p-3 pb-0">
+                                        주소
+                                    </div>
+                                    <div class="col-md-5 p-3 pb-0">
+                                        <p class="text-start ps-2 mb-0 border-bottom" id="userZip">[[${user.zip}]]</p>
+                                    </div>
+                                    <div class="col-md-4 p-1 pb-0">
+                                        <div class="mb-3 mb-md-0 mt-1">
+                                            <button class="btn btn-outline-secondary" type="button" id="btnChangeAddr" name="btnChangeAddr">
+                                                <span role="status">주소 변경</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row p-2 border-bottom">
+                                    <div class="col-md-3 p-3 pt-0 pb-0">
+                                    </div>
+                                    <div class="col-md-9 p-3 pt-0 pb-0">
+                                        <p class="text-start ps-2 border-bottom" id="userAddr1">[[${user.addr1}]]</p>
+                                        <p class="text-start ps-2 border-bottom" id="userAddr2">[[${user.addr2}]]</p>
+                                    </div>
+                                </div>
+                                <!--주소 변경-->
+                                <div id="changeAddrBox" style="display: none">
+                                    <div class="row p-2 pb-0 bg-light">
+                                        <div class="col-md-3 p-3 pb-0">
+                                            주소 변경
+                                        </div>
+                                        <div class="col-md-5 p-1 pb-0">
+                                            <div class="mb-3 mb-md-0 mt-1">
+                                                <input class="form-control p-2" type="text" id="inputZip" name="zip" placeholder="우편번호 검색"/>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 p-1 pb-0">
+                                            <div class="mb-3 mb-md-0 mt-1">
+                                                <button class="btn btn-success" type="button" id="btnSaveAddr" name="btnChangeAddr">
+                                                    <span role="status">주소 변경</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row p-2 border-bottom bg-light">
+                                        <div class="col-md-3 p-3 pt-0 pb-0">
+                                        </div>
+                                        <div class="col-md-8 p-1 pt-0 pb-0">
+                                            <div class="mb-3 mb-md-0 mt-1">
+                                                <input class="form-control mb-2" id="inputAddr1" type="addr1" name="addr1" placeholder="기본주소 입력" />
+                                                <input class="form-control" id="inputAddr2" type="addr2" name="addr2" placeholder="상세주소 입력" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                            <!--폼 끝-->
+                        </div>
+                    </div>
+                    <div class="text-end mb-4">
+                        <a th:href="@{#}" class="btn btn-danger" id="btnUserDelete">회원탈퇴</a>
+                    </div>
+                </div>
+            </div>
+            <!-- 내용 끝 -->
+        </div>
+    </div>
+</html>

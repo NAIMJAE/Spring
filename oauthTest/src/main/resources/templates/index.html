@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>Ouath TEST</title>
+</head>
+<body>
+    <h3> Ouath TEST </h3>
+
+    <p sec:authorize="isAnonymous()">
+        <a th:href="@{/user/login}">로그인</a>
+    </p>
+
+    <p sec:authorize="isAuthenticated()">
+        아이디 : <span>[[${#authentication.principal.uid}]]</span><br>
+        이름 : <span>[[${#authentication.principal.name}]]</span><br>
+        <a th:href="@{/user/logout}">로그아웃</a>
+    </p>
+</body>
+</html>
